@@ -1,5 +1,6 @@
 # Scala Play RESTful API
 
+Here is a brief description! 
 `Enter a brief description here`
 
 ## Running the project
