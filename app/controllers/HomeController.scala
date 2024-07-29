@@ -3,7 +3,7 @@ package controllers
 //controllers
 import play.api.mvc._
 
-import javax.inject._
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 

@@ -1,7 +1,7 @@
 # Scala Play RESTful API
 
 Here is a brief description! 
-`Enter a brief description here`
+`Testing the readme update`
 
 ## Running the project
 

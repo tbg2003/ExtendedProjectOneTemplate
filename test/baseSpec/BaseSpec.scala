@@ -1,6 +1,7 @@
 package baseSpec
 
 import akka.stream.Materializer
+import com.google.inject.matcher.Matchers
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
