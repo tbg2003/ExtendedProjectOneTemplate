@@ -16,6 +16,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
     component,
     repository
   )
+
   private val dataModel: DataModel = DataModel(
     "abcd",
     "test name",
@@ -26,9 +27,8 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
   "ApplicationController .index()" should {
 
-    val result = TestApplicationController.index()(FakeRequest())
-
     "return 200 OK response" in {
+      val result = TestApplicationController.index()(FakeRequest())
       status(result) shouldBe OK
     }
   }
@@ -44,6 +44,15 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
       afterEach()
     }
 
+    "handle bad request" in {
+      beforeEach()
+      val badRequestBody:JsValue = Json.parse("""{"id": "abcd", "name": 12345}""")
+      val badRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(badRequestBody))
+      val createdResult: Future[Result] = TestApplicationController.create()(badRequest)
+
+      status(createdResult) shouldBe Status.BAD_REQUEST
+      afterEach()
+    }
   }
 
   "ApplicationController .read" should {
@@ -80,6 +89,23 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
       status(updateResult) shouldBe Status.ACCEPTED
       contentAsJson(updateResult).as[DataModel] shouldBe dataModel
+
+      afterEach()
+    }
+
+    "Handle a bad request" in {
+      beforeEach()
+      val badRequestBody:JsValue = Json.parse("""{"id": "abcd", "name": 12345}""")
+      val badRequest: FakeRequest[JsValue] = buildGet("/api").withBody[JsValue](Json.toJson(badRequestBody))
+
+      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+
+      status(createdResult) shouldBe Status.CREATED
+
+      val updateResult: Future[Result] = TestApplicationController.update("abcd")(badRequest)
+
+      status(updateResult) shouldBe Status.BAD_REQUEST
 
       afterEach()
     }
