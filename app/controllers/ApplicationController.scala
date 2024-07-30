@@ -34,9 +34,9 @@ class ApplicationController @Inject()(
   }
 
   def read(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    dataRepository.read(id).map{
-      case item:DataModel => Ok(Json.toJson(item))
-      case _ => NotFound(Json.toJson(s"No items found with id;$id"))
+    dataRepository.read(id).map {
+      case Some(item: DataModel) => Ok(Json.toJson(item))
+      case None => NotFound(Json.toJson(s"No items found with id:$id"))
     }
   }
 

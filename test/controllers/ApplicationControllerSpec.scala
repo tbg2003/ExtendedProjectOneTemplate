@@ -29,6 +29,9 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
     "return 200 OK response" in {
       val result = TestApplicationController.index()(FakeRequest())
+      val badRequestBody:JsValue = Json.parse("""{"id": "abcd", "name": 12345}""")
+      val badRequest: FakeRequest[JsValue] = buildGet("/api").withBody[JsValue](Json.toJson(badRequestBody))
+      val result2 = TestApplicationController.index()(badRequest)
       status(result) shouldBe OK
     }
   }
@@ -67,12 +70,25 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
       val readResult: Future[Result] = TestApplicationController.read("abcd")(FakeRequest())
 
-      status(readResult) shouldBe OK
+      status(readResult) shouldBe Status.OK
       contentAsJson(readResult).as[DataModel] shouldBe dataModel
 
       afterEach()
     }
 
+    "handle error when id not in database" in {
+      beforeEach()
+      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+      status(createdResult) shouldBe Status.CREATED
+
+      val readResult: Future[Result] = TestApplicationController.read("abc")(FakeRequest())
+
+      status(readResult) shouldBe Status.NOT_FOUND
+      contentAsJson(readResult).as[String] shouldBe "No items found with id:abc"
+
+      afterEach()
+    }
   }
 
   "ApplicationController .update()" should {
