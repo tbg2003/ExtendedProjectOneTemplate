@@ -1,8 +1,9 @@
 package services
 
 import baseSpec.BaseSpec
+import cats.data.EitherT
 import connectors.LibraryConnector
-import models.DataModel
+import models.{APIError, DataModel}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -30,26 +31,27 @@ class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures
     "return a book" in {
       (mockConnector.get[DataModel](_: String)(_: OFormat[DataModel], _: ExecutionContext))
         .expects(url, *, *)
-        .returning(Future(gameOfThrones.as[DataModel]))
-        .once()
-
-      val result: Future[Book] = testService.getGoogleBook(urlOverride = Some(url), search = "", term = "")
-      whenReady(result) { book =>
-        book shouldBe gameOfThrones.as[Book]
-      }
-    }
-    "return an error" in {
-      val url: String = "testUrl"
-
-      (mockConnector.get[???](_: ???)(_: OFormat[???], _: ???))
-        .expects(url, *, *)
-        .returning(???)// How do we return an error?
+        .returning(EitherT.rightT[Future, APIError](gameOfThrones.as[DataModel]))
         .once()
 
       whenReady(testService.getGoogleBook(urlOverride = Some(url), search = "", term = "").value) { result =>
-        result shouldBe ???
+        result shouldBe Right(gameOfThrones.as[Book])
       }
     }
+
+    "return an error" in {
+      val apiError: APIError.BadAPIResponse = APIError.BadAPIResponse(500, "Could not connect")
+      val url: String = "testUrl"
+
+    (mockConnector.get[DataModel](_: String)(_: OFormat[DataModel], _: ExecutionContext))
+      .expects(url, *, *)
+      .returning(EitherT.leftT[Future, DataModel](apiError))
+      .once()
+
+    whenReady(testService.getGoogleBook(urlOverride = Some(url), search = "", term = "").value) { result =>
+      result shouldBe Left(apiError)
+    }
   }
+}
 
 }

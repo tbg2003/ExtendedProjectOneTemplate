@@ -2,9 +2,10 @@ package controllers
 
 import com.mongodb.client.result.{DeleteResult, UpdateResult}
 import repositories.DataRepository
-import models.DataModel
+import models.{APIError, DataModel}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, WrappedRequest}
+import play.mvc.Results.status
 import services.{ApplicationService, Book}
 
 import javax.inject.{Inject, Singleton}
@@ -23,7 +24,7 @@ class ApplicationController @Inject()(
   def index(): Action[AnyContent] = Action.async { implicit request =>
     dataRepository.index().map{
       case Right(item: Seq[DataModel]) => Ok {Json.toJson(item)}
-      case Left(error) => Status(error)(Json.toJson("Unable to find any books"))
+      case Left(error) => Status(error.httpResponseStatus)(Json.toJson("Unable to find any books"))
     }
   }
 
@@ -64,9 +65,10 @@ class ApplicationController @Inject()(
   }
 
   def getGoogleBook(search: String, term: String): Action[AnyContent] = Action.async { implicit request =>
-    service.getGoogleBook(search = search, term = term).map {
-      case book: Book => Ok{Json.toJson(book)}
-      case _ => NotFound
+    service.getGoogleBook(search = search, term = term).value.map {
+      case Right(book) => Ok(Json.toJson(book))
+      case Left(error: APIError.BadAPIResponse) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
+      case Left(_) => InternalServerError(Json.obj("message" -> "An unexpected error occurred"))
     }
   }
 }
