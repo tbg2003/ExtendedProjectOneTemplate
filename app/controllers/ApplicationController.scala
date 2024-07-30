@@ -69,5 +69,4 @@ class ApplicationController @Inject()(
       case _ => NotFound
     }
   }
-
 }
