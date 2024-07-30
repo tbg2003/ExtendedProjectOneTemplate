@@ -1,32 +1,64 @@
 package controllers
 
-import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request}
+import com.mongodb.client.result.{DeleteResult, UpdateResult}
+import repositories.DataRepository
+import models.DataModel
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, WrappedRequest}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.impl.Promise
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 
 @Singleton
-class ApplicationController @Inject()(val controllerComponents: ControllerComponents) extends BaseController{
+class ApplicationController @Inject()(
+                                       val controllerComponents: ControllerComponents,
+                                       val dataRepository: DataRepository
+                                     ) (implicit val ec: ExecutionContext)extends BaseController{
 
-  def index(): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    Future.successful(Ok)
+  def index(): Action[AnyContent] = Action.async { implicit request =>
+    dataRepository.index().map{
+      case Right(item: Seq[DataModel]) => Ok {Json.toJson(item)}
+      case Left(error) => Status(error)(Json.toJson("Unable to find any books"))
+    }
   }
 
-  def create(): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    Future.successful(Ok)
+  def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    request.body.validate[DataModel] match {
+      case JsSuccess(dataModel, _) =>
+        dataRepository.create(dataModel).map(_ => Created)
+      case JsError(_) => Future(BadRequest)
+    }
   }
 
   def read(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    Future.successful(Ok)
+    dataRepository.read(id).map{
+      case item:DataModel => Ok(Json.toJson(item))
+      case _ => NotFound(Json.toJson(s"No items found with id;$id"))
+    }
   }
 
-  def update(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    Future.successful(Ok)
-  }
+  def update(id: String): Action[JsValue] = Action.async(parse.json){implicit request =>
+    request.body.validate[DataModel] match {
+      case JsSuccess(dataModel, _) =>
+        // further validation of fields
+      dataRepository.update(id, dataModel).map {
+        case result: UpdateResult if result.wasAcknowledged() => Accepted {
+          Json.toJson(dataModel)
+        }
+        case result: UpdateResult if !result.wasAcknowledged() => NotFound
+      }
+      case JsError(_) => Future(BadRequest)
+      }
+    }
 
   def delete(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    Future.successful(Ok)
+    dataRepository.delete(id) map{
+      case result: DeleteResult if result.wasAcknowledged() => Accepted
+      case result: DeleteResult if !result.wasAcknowledged() => NotFound
+    }
   }
 
 }
