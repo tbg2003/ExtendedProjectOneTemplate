@@ -16,6 +16,6 @@ libraryDependencies ++= Seq(
 
 lazy val root = (project in file("."))
   .settings(
-    name := "play-template"
+    name := "ExtendedProjectOneTemplate"
   )
   .enablePlugins(PlayScala)
