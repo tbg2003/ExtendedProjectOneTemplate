@@ -5,7 +5,10 @@ ThisBuild / scalaVersion := "2.13.8"
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.19"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test
+libraryDependencies += ws
+
 resolvers += "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service.gov.uk/maven2"
+
 libraryDependencies ++= Seq(
   "uk.gov.hmrc.mongo"      %% "hmrc-mongo-play-28"   % "0.63.0",
   guice,
