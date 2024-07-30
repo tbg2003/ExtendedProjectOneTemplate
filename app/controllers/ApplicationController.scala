@@ -6,6 +6,8 @@ import models.DataModel
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, WrappedRequest}
 
+
+import services.ApplicationService
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.impl.Promise
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,7 +17,8 @@ import scala.util.Success
 @Singleton
 class ApplicationController @Inject()(
                                        val controllerComponents: ControllerComponents,
-                                       val dataRepository: DataRepository
+                                       val dataRepository: DataRepository,
+                                       val service: ApplicationService
                                      ) (implicit val ec: ExecutionContext)extends BaseController{
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
@@ -58,6 +61,12 @@ class ApplicationController @Inject()(
     dataRepository.delete(id) map{
       case result: DeleteResult if result.wasAcknowledged() => Accepted
       case result: DeleteResult if !result.wasAcknowledged() => NotFound
+    }
+  }
+
+  def getGoogleBook(search: String, term: String): Action[AnyContent] = Action.async { implicit request =>
+    service.getGoogleBook(search = search, term = term).map {
+      ???
     }
   }
 
