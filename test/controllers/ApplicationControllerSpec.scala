@@ -5,7 +5,10 @@ import models.DataModel
 import play.api.test.FakeRequest
 import play.api.http.Status
 import play.api.test.Helpers._
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.mvc.Result
+
+import scala.concurrent.Future
 
 class ApplicationControllerSpec extends BaseSpecWithApplication{
 
@@ -13,6 +16,13 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
     component,
     repository
   )
+  private val dataModel: DataModel = DataModel(
+    "abcd",
+    "test name",
+    "test description",
+    100
+  )
+
 
   "ApplicationController .index()" should {
     val result = TestApplicationController.index()(FakeRequest())
@@ -22,11 +32,14 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
     }
   }
 
-  "ApplicationController .create()" should {
-    val result = TestApplicationController.create()(FakeRequest())
+  "ApplicationController .create" should {
 
-    "return 415 unsupported media response" in {
-      status(result) shouldBe Status.UNSUPPORTED_MEDIA_TYPE
+    "create a book in the database" in {
+
+      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+
+      status(createdResult) shouldBe Status.CREATED
     }
   }
 
