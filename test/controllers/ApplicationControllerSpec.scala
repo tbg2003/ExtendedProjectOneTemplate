@@ -25,6 +25,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
 
   "ApplicationController .index()" should {
+
     val result = TestApplicationController.index()(FakeRequest())
 
     "return 200 OK response" in {
@@ -35,45 +36,70 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
   "ApplicationController .create" should {
 
     "create a book in the database" in {
-
+      beforeEach()
       val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
 
       status(createdResult) shouldBe Status.CREATED
+      afterEach()
     }
+
   }
 
   "ApplicationController .read" should {
 
     "find a book in the database by id" in {
+      beforeEach()
 
       val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
+
+      status(createdResult) shouldBe Status.CREATED
 
       val readResult: Future[Result] = TestApplicationController.read("abcd")(FakeRequest())
 
       status(readResult) shouldBe OK
       contentAsJson(readResult).as[DataModel] shouldBe dataModel
+
+      afterEach()
     }
+
   }
 
   "ApplicationController .update()" should {
-    val fakeId:String = "1234"
-    val result = TestApplicationController.update(fakeId)(FakeRequest())
 
-    "return 200 OK response" in {
-      status(result) shouldBe Status.OK
+    "Update a book in the database by id" in {
+      beforeEach()
+
+      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+
+      status(createdResult) shouldBe Status.CREATED
+
+      val updateResult: Future[Result] = TestApplicationController.update("abcd")(request)
+
+      status(updateResult) shouldBe Status.ACCEPTED
+      contentAsJson(updateResult).as[DataModel] shouldBe dataModel
+
+      afterEach()
     }
+
   }
 
   "ApplicationController .delete()" should {
-    val fakeId:String = "1234"
-    val result = TestApplicationController.delete(fakeId)(FakeRequest())
 
-    "return 200 OK response" in {
-      status(result) shouldBe Status.OK
+    "delete a book by the id" in {
+      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+      status(createdResult) shouldBe Status.CREATED
+
+      val deleteResult:Future[Result] = TestApplicationController.delete("abcd")(FakeRequest())
+
+      status(deleteResult) shouldBe Status.ACCEPTED
     }
   }
+
+
   override def beforeEach(): Unit = await(repository.deleteAll())
   override def afterEach(): Unit = await(repository.deleteAll())
 }
