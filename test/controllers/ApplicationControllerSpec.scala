@@ -43,12 +43,17 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
     }
   }
 
-  "ApplicationController .read()" should {
-    val fakeId:String = "1234"
-    val result = TestApplicationController.read(fakeId)(FakeRequest())
+  "ApplicationController .read" should {
 
-    "return 200 OK response with body" in {
-      status(result) shouldBe Status.OK
+    "find a book in the database by id" in {
+
+      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+
+      val readResult: Future[Result] = TestApplicationController.read("abcd")(FakeRequest())
+
+      status(readResult) shouldBe OK
+      contentAsJson(readResult).as[DataModel] shouldBe dataModel
     }
   }
 
@@ -69,5 +74,6 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
       status(result) shouldBe Status.OK
     }
   }
-
+  override def beforeEach(): Unit = await(repository.deleteAll())
+  override def afterEach(): Unit = await(repository.deleteAll())
 }
