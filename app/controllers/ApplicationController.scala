@@ -61,9 +61,10 @@ class ApplicationController @Inject()(
     }
 
   def delete(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    dataRepository.delete(id) map{
-      case result: DeleteResult if result.wasAcknowledged() => Accepted
-      case result: DeleteResult if !result.wasAcknowledged() => NotFound
+    dataRepository.delete(id).map{
+      case Right(result: DeleteResult) if result.wasAcknowledged() => Accepted
+      case Right(result: DeleteResult) if !result.wasAcknowledged() => NotFound(Json.obj("message" -> s"No item found with id: $id"))
+      case Left(error) => Status(error.httpResponseStatus)(Json.toJson(error.upstreamMessage))
     }
   }
 
