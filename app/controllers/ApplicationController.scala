@@ -52,10 +52,9 @@ class ApplicationController @Inject()(
       case JsSuccess(dataModel, _) =>
         // further validation of fields
       dataRepository.update(id, dataModel).map {
-        case result: UpdateResult if result.wasAcknowledged() => Accepted {
-          Json.toJson(dataModel)
-        }
-        case result: UpdateResult if !result.wasAcknowledged() => NotFound
+        case Right(result: UpdateResult) if result.wasAcknowledged() => Accepted(Json.toJson(dataModel))
+        case Right(result: UpdateResult) if !result.wasAcknowledged() => NotFound(Json.obj("message" -> s"No item found with id: $id"))
+        case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
       }
       case JsError(_) => Future(BadRequest)
       }
