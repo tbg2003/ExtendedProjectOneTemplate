@@ -66,9 +66,10 @@ class DataRepository @Inject()(
     }
 
   def delete(id: String): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] =
-    collection.deleteOne(
-      filter = byID(id)
-    ).toFuture().map(Right(_)).recover {
+    collection.deleteOne(byID(id)).toFuture().map { deleteResult =>
+      if (deleteResult.getDeletedCount > 0) Right(deleteResult)
+      else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
+    }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 

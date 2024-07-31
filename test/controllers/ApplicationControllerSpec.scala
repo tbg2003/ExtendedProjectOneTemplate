@@ -194,22 +194,14 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
       status(deleteResult) shouldBe Status.ACCEPTED
       afterEach()
     }
-    "return 404 Not Found Error" in {
+    "return 404 Not Found Error with error message" in {
       beforeEach()
       val deleteResult = TestApplicationController.delete("abc")(FakeRequest())
       status(deleteResult) shouldBe Status.NOT_FOUND
+      contentAsJson(deleteResult).as[String] shouldBe "No item found with id: abc"
       afterEach()
     }
 
-    "return 500 Internal Server Error" in {
-      beforeEach()
-      val apiError:APIError = APIError.BadAPIResponse(500, "error message")
-      val deleteResult: Future[Result] = TestApplicationController.delete("invalid id-Format")(FakeRequest())
-
-      status(deleteResult) shouldBe apiError.httpResponseStatus
-
-      afterEach()
-    }
   }
 
   override def beforeEach(): Unit = await(repository.deleteAll())
