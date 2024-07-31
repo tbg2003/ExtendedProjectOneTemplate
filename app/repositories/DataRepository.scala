@@ -1,18 +1,18 @@
 package repositories
 
+import cats.data.EitherT
 import models.{APIError, DataModel}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.{empty, equal}
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
 import org.mongodb.scala.result
+import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.runtime.universe.Try
-import scala.util.{Failure, Success}
 
 @Singleton
 class DataRepository @Inject()(
@@ -27,12 +27,17 @@ class DataRepository @Inject()(
   replaceIndexes = false
 ) {
 
-  def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  =
-    collection.find().toFuture().map { books =>
-      Right(books)
-    }.recover {
-      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+  def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  = {
+    collection
+      .find()
+      .toFuture()
+      .map { books =>
+          Right(books)
+        }.recover {
+          case _ =>
+            Left(APIError.BadAPIResponse(500, s"An error occurred"))
     }
+  }
 
   def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] =
     collection
@@ -114,9 +119,5 @@ class DataRepository @Inject()(
     }
   }
 
-
-
   def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for testst: needed for tests
-
-
 }
