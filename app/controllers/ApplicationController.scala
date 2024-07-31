@@ -3,6 +3,7 @@ package controllers
 import com.mongodb.client.result.{DeleteResult, UpdateResult}
 import repositories.DataRepository
 import models.{APIError, DataModel}
+import org.mongodb.scala.result
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, WrappedRequest}
 import play.mvc.Results.status
@@ -52,8 +53,10 @@ class ApplicationController @Inject()(
       case JsSuccess(dataModel, _) =>
         // further validation of fields
       dataRepository.update(id, dataModel).map {
-        case Right(result: UpdateResult) if result.wasAcknowledged() => Accepted(Json.toJson(dataModel))
-        case Right(result: UpdateResult) if !result.wasAcknowledged() => NotFound(Json.obj("message" -> s"No item found with id: $id"))
+        case Right(result: UpdateResult) =>
+          if( result.wasAcknowledged()) Accepted(Json.toJson(dataModel))
+          else NotFound(Json.obj("message" -> s"No item found with id: $id"))
+
         case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
       }
       case JsError(_) => Future(BadRequest)
@@ -62,8 +65,10 @@ class ApplicationController @Inject()(
 
   def delete(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
     dataRepository.delete(id).map{
-      case Right(result: DeleteResult) if result.wasAcknowledged() => Accepted
-      case Right(result: DeleteResult) if !result.wasAcknowledged() => NotFound(Json.obj("message" -> s"No item found with id: $id"))
+      case Right(result: result.DeleteResult) =>
+        if(result.wasAcknowledged()) Accepted
+        else NotFound(Json.obj("message" -> s"No item found with id: $id"))
+
       case Left(error) => Status(error.httpResponseStatus)(Json.toJson(error.upstreamMessage))
     }
   }

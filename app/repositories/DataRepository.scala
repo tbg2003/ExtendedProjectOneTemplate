@@ -60,7 +60,7 @@ class DataRepository @Inject()(
     collection.replaceOne(
       filter = byID(id),
       replacement = book,
-      options = new ReplaceOptions().upsert(false) // if upsert set to false, no document created if no match, will throw error
+      options = new ReplaceOptions().upsert(true) // if upsert set to false, no document created if no match, will throw error
     ).toFuture().map(Right(_)).recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
