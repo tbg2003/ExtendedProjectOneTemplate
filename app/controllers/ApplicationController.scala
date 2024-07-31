@@ -7,7 +7,7 @@ import org.mongodb.scala.result
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, WrappedRequest}
 import play.mvc.Results.status
-import services.{ApplicationService, Book}
+import services.{ApplicationService, Book, RepositoryService}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.impl.Promise
@@ -19,7 +19,8 @@ import scala.util.Success
 class ApplicationController @Inject()(
                                        val controllerComponents: ControllerComponents,
                                        val dataRepository: DataRepository,
-                                       val service: ApplicationService
+                                       val service: ApplicationService,
+                                       val repoService: RepositoryService
                                      ) (implicit val ec: ExecutionContext)extends BaseController{
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
