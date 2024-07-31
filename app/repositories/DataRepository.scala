@@ -2,7 +2,8 @@ package repositories
 
 import models.{APIError, DataModel}
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Filters.empty
+import org.mongodb.scala.model.Filters.{empty, equal}
+import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
 import org.mongodb.scala.result
 import uk.gov.hmrc.mongo.MongoComponent
@@ -10,6 +11,8 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.reflect.runtime.universe.Try
+import scala.util.{Failure, Success}
 
 @Singleton
 class DataRepository @Inject()(
@@ -80,7 +83,39 @@ class DataRepository @Inject()(
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def updateField(id:String, field:String)
+  def getItemToUpdate(id: String): Future[Either[APIError.BadAPIResponse, DataModel]] = {
+    collection.find(equal("_id", id)).first().toFuture().map { result =>
+      Right(result)
+    }.recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+    }
+  }
+
+  def getUpdateOperation(updateField:UpdateField, updatedValue:String):Either[APIError.BadAPIResponse, Bson] = {
+    updateField match {
+      case UpdateField.Name => Right(set("name", updatedValue))
+      case UpdateField.Description => Right(set("description", updatedValue))
+      case UpdateField.PageCount =>
+        try{
+          Right(set("pageCount", updatedValue.toInt))
+        } case _ => Left(APIError.BadAPIResponse(500, "incorrect value given"))
+        }
+    }
+
+  def updateField(id: String, update: Update): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
+    getUpdateOperation(update.fieldToUpdate, update.updatedValue) match {
+      case Left(error) => Future(Left(error))
+      case Right(updateOperation) =>
+        collection.updateOne(
+          filter = byID(id),
+          update = updateOperation,
+          options = new UpdateOptions().upsert(false)
+        ).toFuture().map(Right(_)).recover{
+          case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+        }
+    }
+  }
+
 
 
   def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for testst: needed for tests
