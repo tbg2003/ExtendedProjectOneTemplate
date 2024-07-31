@@ -44,12 +44,11 @@ class DataRepository @Inject()(
       Filters.equal("_id", id)
     )
 
-  def read(id: String): Future[Option[DataModel]] =
-    collection.find(byID(id)).headOption flatMap {
-      case Some(data) =>
-        Future(Some(data))
-      case None =>
-        Future(None)
+  def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
+    collection.find(byID(id)).headOption.map { data =>
+      Right(data)
+    }.recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
   def update(id: String, book: DataModel): Future[result.UpdateResult] =
