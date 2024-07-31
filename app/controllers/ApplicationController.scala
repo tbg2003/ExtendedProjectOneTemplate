@@ -48,6 +48,14 @@ class ApplicationController @Inject()(
     }
   }
 
+  def readByName(name: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
+    dataRepository.readByName(name).map {
+      case Right(Some(item: DataModel)) => Ok(Json.toJson(item))
+      case Right(None) => NotFound(Json.toJson(s"No items found with name:$name"))
+      case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
+    }
+  }
+
   def update(id: String): Action[JsValue] = Action.async(parse.json){implicit request =>
     request.body.validate[DataModel] match {
       case JsSuccess(dataModel, _) =>

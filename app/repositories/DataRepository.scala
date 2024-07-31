@@ -49,6 +49,13 @@ class DataRepository @Inject()(
       Filters.equal("name", name)
     )
 
+  def readByName(name: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
+    collection.find(byName(name)).headOption.map { data =>
+      Right(data)
+    }.recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+    }
+
   def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
     collection.find(byID(id)).headOption.map { data =>
       Right(data)
@@ -72,6 +79,8 @@ class DataRepository @Inject()(
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
+
+  def
 
 
   def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for testst: needed for tests

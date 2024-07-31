@@ -124,6 +124,40 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
   }
 
 
+  "ApplicationController .readByName" should {
+
+    "return 200 Ok with body" in {
+      beforeEach()
+
+      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+
+      status(createdResult) shouldBe Status.CREATED
+
+      val readResult: Future[Result] = TestApplicationController.readByName("test name")(FakeRequest())
+
+      status(readResult) shouldBe Status.OK
+      contentAsJson(readResult).as[DataModel] shouldBe dataModel
+
+      afterEach()
+    }
+
+    "return 404 Not Found with body" when {
+      beforeEach()
+      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+      status(createdResult) shouldBe Status.CREATED
+
+      val readNameResult: Future[Result] = TestApplicationController.readByName("non existing name")(FakeRequest())
+
+      status(readNameResult) shouldBe Status.NOT_FOUND
+      contentAsJson(readNameResult).as[String] shouldBe "No items found with name:non existing name"
+
+      afterEach()
+    }
+  }
+
+
   "ApplicationController .update()" should {
 
     "Update a book in the database by id" in {
