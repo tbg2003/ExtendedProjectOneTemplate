@@ -68,6 +68,10 @@ class DataRepository @Inject()(
     }
 
 
-  def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for tests
+  def deleteAll(): Future[Either[APIError.BadAPIResponse, Unit]] =
+    collection.deleteMany(empty()).toFuture().map(_ => Right(())).recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+    } //Hint: needed for tests
+
 
 }

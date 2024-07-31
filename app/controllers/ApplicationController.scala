@@ -24,22 +24,26 @@ class ApplicationController @Inject()(
   def index(): Action[AnyContent] = Action.async { implicit request =>
     dataRepository.index().map{
       case Right(item: Seq[DataModel]) => Ok {Json.toJson(item)}
-      case Left(error) => Status(error.httpResponseStatus)(Json.toJson("Unable to find any books"))
+      case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
     }
   }
 
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request.body.validate[DataModel] match {
       case JsSuccess(dataModel, _) =>
-        dataRepository.create(dataModel).map(_ => Created)
+        dataRepository.create(dataModel).map{
+          case Right(createdDataModel) => Created(Json.toJson(createdDataModel))
+          case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
+        }
       case JsError(_) => Future(BadRequest)
     }
   }
 
   def read(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
     dataRepository.read(id).map {
-      case Some(item: DataModel) => Ok(Json.toJson(item))
-      case None => NotFound(Json.toJson(s"No items found with id:$id"))
+      case Right(Some(item: DataModel)) => Ok(Json.toJson(item))
+      case Right(None) => NotFound(Json.toJson(s"No items found with id:$id"))
+      case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
     }
   }
 
