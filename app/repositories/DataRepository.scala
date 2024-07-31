@@ -25,9 +25,10 @@ class DataRepository @Inject()(
 ) {
 
   def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  =
-    collection.find().toFuture().map{
-      case books: Seq[DataModel] => Right(books)
-      case _ =>  Left(APIError.BadAPIResponse(404, "Books cannot be found"))
+    collection.find().toFuture().map { books =>
+      Right(books)
+    }.recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
   def create(book: DataModel): Future[DataModel] =
@@ -53,7 +54,7 @@ class DataRepository @Inject()(
     collection.replaceOne(
       filter = byID(id),
       replacement = book,
-      options = new ReplaceOptions().upsert(true) //What happens when we set this to false?
+      options = new ReplaceOptions().upsert(true) //If false -> no document created if no match
     ).toFuture()
 
   def delete(id: String): Future[result.DeleteResult] =
