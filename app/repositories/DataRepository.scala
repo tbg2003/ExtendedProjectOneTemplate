@@ -51,12 +51,14 @@ class DataRepository @Inject()(
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def update(id: String, book: DataModel): Future[result.UpdateResult] =
+  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
     collection.replaceOne(
       filter = byID(id),
       replacement = book,
-      options = new ReplaceOptions().upsert(true) //If false -> no document created if no match
-    ).toFuture()
+      options = new ReplaceOptions().upsert(true) // if upsert set to false, no document created if no match
+    ).toFuture().map(Right(_)).recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+    }
 
   def delete(id: String): Future[result.DeleteResult] =
     collection.deleteOne(
