@@ -31,11 +31,13 @@ class DataRepository @Inject()(
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def create(book: DataModel): Future[DataModel] =
+  def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] =
     collection
       .insertOne(book)
-      .toFuture()
-      .map(_ => book)
+      .toFuture().map(_ => Right(book)
+      ).recover{
+        case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+      }
 
   private def byID(id: String): Bson =
     Filters.and(
