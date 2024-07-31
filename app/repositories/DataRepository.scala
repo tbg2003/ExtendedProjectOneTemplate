@@ -84,7 +84,7 @@ class DataRepository @Inject()(
     }
 
 
-  def getUpdateOperation(field:String, value:String):Either[APIError.BadAPIResponse, Bson] = {
+  private def getUpdateOperation(field:String, value:String):Either[APIError.BadAPIResponse, Bson] = {
     field match {
       case "name" => Right(set("name", value))
       case "description" => Right(set("description", value))

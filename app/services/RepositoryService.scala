@@ -1,13 +1,16 @@
 package services
 
+import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel}
+import org.bson.BsonDocument
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.empty
 import org.mongodb.scala.model.{Filters, ReplaceOptions, UpdateOptions}
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.result
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.mvc.Results.{Accepted, NotFound, Status}
 import play.api.mvc.{Action, AnyContent, Request}
 import repositories.DataRepository
 
@@ -16,36 +19,69 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RepositoryService @Inject()(dataRepository: DataRepository){
 
-  def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  = {
-    val result = dataRepository.index()
-    result.map{
-      case Left(error) => ???
-      case Right(value) => ???
+  def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  = {
+    dataRepository.index().map{
+      case Left(error) => Left(error)
+      case Right(item: Seq[DataModel]) => Right(item)
+      case Right(_) => Left(APIError.BadAPIResponse(500, "unexpected error occurred"))
+    }
+  }
+
+  def create(book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, DataModel]] = {
+    dataRepository.create(book).map{
+      case Left(error) => Left(error)
+      case Right(item : DataModel) => Right(item)
+      case Right(_) => Left(APIError.BadAPIResponse(500, "unexpected error occurred"))
     }
   }
 
 
-  def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] = ???
+  def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
+    dataRepository.readByName(name).map{
+      case Left(error) => Left(error)
+      case Right(Some(item:DataModel)) => Right(Some(item))
+      case Right(Some(error)) => Left(APIError.BadAPIResponse(500, s"Error: $error not of type DataModel"))
+      case Right(None) => Left(APIError.BadAPIResponse(404, s"No Book Found with name: $name"))
+    }
+  }
 
 
-  def readByName(name: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = ???
+  def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
+    dataRepository.read(id).map{
+      case Left(error) => Left(error)
+      case Right(Some(item:DataModel)) => Right(Some(item))
+      case Right(Some(error)) => Left(APIError.BadAPIResponse(500, s"Error: $error not of type DataModel"))
+      case Right(None) => Left(APIError.BadAPIResponse(404, s"No Book Found with id: $id"))
+    }
+  }
 
 
-  def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = ???
+  def update(id: String, book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
+    dataRepository.update(id, book).map {
+      case Left(error) => Left(error)
+      case Right(result: UpdateResult) =>
+        if( result.wasAcknowledged()) Right(result)
+        else Left(APIError.BadAPIResponse(404, s"$result Not Found"))
+      case Right(_) => Left(APIError.BadAPIResponse(500, "unexpected error occurred"))
+      }
+    }
 
 
-  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = ???
+  def delete(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] = {
+    dataRepository.delete(id).map {
+      case Left(error) => Left(error)
+      case Right(value) => Right(value)
+    }
+  }
+
+  def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
+    dataRepository.updateField(id, field, value).map {
+      case Left(error) => Left(error)
+      case Right(value) => Right(value)
+    }
+  }
 
 
-  def delete(id: String): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] = ???
-
-
-  def getUpdateOperation(field:String, value:String):Either[APIError.BadAPIResponse, Bson] = ???
-
-
-  def updateField(id: String, field: String, value:String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = ???
-
-
-  def deleteAll(): Future[Unit] = ??? //Hint: needed for testst: needed for tests
+  def deleteAll()(implicit ec: ExecutionContext): Future[Unit] = ??? //Hint: needed for testst: needed for tests
 
 }
