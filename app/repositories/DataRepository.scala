@@ -44,6 +44,11 @@ class DataRepository @Inject()(
       Filters.equal("_id", id)
     )
 
+  private def byName(name:String):Bson =
+    Filters.and(
+      Filters.equal("name", name)
+    )
+
   def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
     collection.find(byID(id)).headOption.map { data =>
       Right(data)
@@ -55,7 +60,7 @@ class DataRepository @Inject()(
     collection.replaceOne(
       filter = byID(id),
       replacement = book,
-      options = new ReplaceOptions().upsert(true) // if upsert set to false, no document created if no match
+      options = new ReplaceOptions().upsert(false) // if upsert set to false, no document created if no match, will throw error
     ).toFuture().map(Right(_)).recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
@@ -68,10 +73,7 @@ class DataRepository @Inject()(
     }
 
 
-  def deleteAll(): Future[Either[APIError.BadAPIResponse, Unit]] =
-    collection.deleteMany(empty()).toFuture().map(_ => Right(())).recover {
-      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
-    } //Hint: needed for tests
+  def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for testst: needed for tests
 
 
 }

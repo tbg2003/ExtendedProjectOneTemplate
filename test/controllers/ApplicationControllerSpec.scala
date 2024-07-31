@@ -1,7 +1,8 @@
 package controllers
 
 import baseSpec.BaseSpecWithApplication
-import models.DataModel
+import models.{APIError, DataModel}
+import org.mongodb.scala.model.Updates
 import org.scalamock.scalatest.MockFactory
 import play.api.test.FakeRequest
 import play.api.http.Status
@@ -33,30 +34,45 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
   "ApplicationController .index()" should {
 
     "return 200 OK response with body" in {
+      beforeEach()
+
+      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+      status(createdResult) shouldBe Status.CREATED
+
       val result = TestApplicationController.index()(FakeRequest())
       status(result) shouldBe OK
-    }
-    "return 404 Not Found response" in {
-      val result = TestApplicationController.index()(FakeRequest())
-      status(result) shouldBe OK
+      afterEach()
     }
   }
 
   "ApplicationController .create" should {
 
-    "create a book in the database" in {
+    "return 201 Created with body" in {
       beforeEach()
-      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val request: FakeRequest[JsValue] = buildPost("/api/create ").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
 
       status(createdResult) shouldBe Status.CREATED
+      contentAsJson(createdResult).as[DataModel] shouldBe dataModel
       afterEach()
     }
 
-    "handle bad request" in {
+    "return 500 Internal Server Error" in {
+      beforeEach()
+      val apiError:APIError = APIError.BadAPIResponse(500, "An error has occurred:")
+      val request:FakeRequest[JsValue] = buildPost("/api/create").withBody[JsValue](Json.toJson(dataModel))
+      val request2:FakeRequest[JsValue] = buildPost("/api/create").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+      val createdResult2: Future[Result] = TestApplicationController.create()(request2)
+
+      status(createdResult2) shouldBe apiError.httpResponseStatus
+      afterEach()
+    }
+    "return 400 Bad Request" in {
       beforeEach()
       val badRequestBody:JsValue = Json.parse("""{"id": "abcd", "name": 12345}""")
-      val badRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(badRequestBody))
+      val badRequest: FakeRequest[JsValue] = buildPost("/api/create").withBody[JsValue](Json.toJson(badRequestBody))
       val createdResult: Future[Result] = TestApplicationController.create()(badRequest)
 
       status(createdResult) shouldBe Status.BAD_REQUEST
@@ -66,10 +82,10 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
 
   "ApplicationController .read" should {
 
-    "find a book in the database by id" in {
+    "return 200 Ok with body" in {
       beforeEach()
 
-      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val request: FakeRequest[JsValue] = buildGet("/api/read/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
 
       status(createdResult) shouldBe Status.CREATED
@@ -82,9 +98,9 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
       afterEach()
     }
 
-    "handle error when id not in database" in {
+    "return 404 Not Found with body" when {
       beforeEach()
-      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val request: FakeRequest[JsValue] = buildGet("/api/read/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
       status(createdResult) shouldBe Status.CREATED
 
@@ -114,8 +130,19 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
 
       afterEach()
     }
+    "return 500 Internal Server Error" in {
+      beforeEach()
+      val apiError:APIError = APIError.BadAPIResponse(500, "An error has occurred:")
+      val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
+      val updateResult: Future[Result] = TestApplicationController.create()(request)
+      val updateResult2: Future[Result] = TestApplicationController.create()(request)
 
-    "Handle a bad request" in {
+      status(updateResult2) shouldBe apiError.httpResponseStatus
+
+      afterEach()
+    }
+
+    "return 400 Bad Request" in {
       beforeEach()
       val badRequestBody:JsValue = Json.parse("""{"id": "abcd", "name": 12345}""")
       val badRequest: FakeRequest[JsValue] = buildGet("/api").withBody[JsValue](Json.toJson(badRequestBody))
@@ -136,7 +163,8 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
 
   "ApplicationController .delete()" should {
 
-    "delete a book by the id" in {
+    "return 202 Accepted" in {
+      beforeEach()
       val request: FakeRequest[JsValue] = buildGet("/api/${dataModel._id}").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
       status(createdResult) shouldBe Status.CREATED
@@ -144,6 +172,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
       val deleteResult:Future[Result] = TestApplicationController.delete("abcd")(FakeRequest())
 
       status(deleteResult) shouldBe Status.ACCEPTED
+      afterEach()
     }
   }
 
