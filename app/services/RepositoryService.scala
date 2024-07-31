@@ -1,19 +1,9 @@
 package services
 
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel}
-import org.bson.BsonDocument
-import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.Filters.empty
-import org.mongodb.scala.model.{Filters, ReplaceOptions, UpdateOptions}
-import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.result
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.Results.{Accepted, NotFound, Status}
-import play.api.mvc.{Action, AnyContent, Request}
 import repositories.DataRepository
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -80,8 +70,5 @@ class RepositoryService @Inject()(dataRepository: DataRepository){
       case Right(value) => Right(value)
     }
   }
-
-
-  def deleteAll()(implicit ec: ExecutionContext): Future[Unit] = ??? //Hint: needed for testst: needed for tests
 
 }
