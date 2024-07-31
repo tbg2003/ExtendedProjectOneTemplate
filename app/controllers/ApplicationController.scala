@@ -55,6 +55,16 @@ class ApplicationController @Inject()(
       case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
     }
   }
+  def updateField(id:String, field:String, value:String): Action[JsValue] = Action.async(parse.json){implicit request =>
+    val cleanField:String = field.strip().toLowerCase
+    val cleanValue:String = value.strip().toLowerCase
+    dataRepository.updateField(id, cleanField, cleanValue).map {
+      case Right(result: UpdateResult) =>
+        if( result.wasAcknowledged()) Accepted
+        else NotFound(Json.obj("message" -> s"No item found with id: $id"))
+      case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
+        }
+  }
 
   def update(id: String): Action[JsValue] = Action.async(parse.json){implicit request =>
     request.body.validate[DataModel] match {

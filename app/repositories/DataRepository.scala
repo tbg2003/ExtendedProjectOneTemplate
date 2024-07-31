@@ -83,34 +83,32 @@ class DataRepository @Inject()(
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def getItemToUpdate(id: String): Future[Either[APIError.BadAPIResponse, DataModel]] = {
-    collection.find(equal("_id", id)).first().toFuture().map { result =>
-      Right(result)
-    }.recover {
-      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
-    }
-  }
 
-  def getUpdateOperation(updateField:UpdateField, updatedValue:String):Either[APIError.BadAPIResponse, Bson] = {
-    updateField match {
-      case UpdateField.Name => Right(set("name", updatedValue))
-      case UpdateField.Description => Right(set("description", updatedValue))
-      case UpdateField.PageCount =>
+  def getUpdateOperation(field:String, value:String):Either[APIError.BadAPIResponse, Bson] = {
+    field match {
+      case "name" => Right(set("name", value))
+      case "description" => Right(set("description", value))
+      case "pagecount" =>
         try{
-          Right(set("pageCount", updatedValue.toInt))
-        } case _ => Left(APIError.BadAPIResponse(500, "incorrect value given"))
+          Right(set("pageCount", value.toInt))
+        }catch{ case ex:Exception => Left(APIError.BadAPIResponse(500, "pageCount must be an integer"))}
+      case _ => Left(APIError.BadAPIResponse(500, "invalid field name"))
         }
     }
 
-  def updateField(id: String, update: Update): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
-    getUpdateOperation(update.fieldToUpdate, update.updatedValue) match {
+  def updateField(id: String, field: String, value:String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
+    getUpdateOperation(field, value) match {
       case Left(error) => Future(Left(error))
       case Right(updateOperation) =>
         collection.updateOne(
           filter = byID(id),
           update = updateOperation,
-          options = new UpdateOptions().upsert(false)
-        ).toFuture().map(Right(_)).recover{
+          options = new UpdateOptions().upsert(true)
+        ).toFuture().
+          map { updatedResult =>
+            if (updatedResult.getMatchedCount > 0) Right(updatedResult)
+            else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
+          }.recover{
           case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
         }
     }

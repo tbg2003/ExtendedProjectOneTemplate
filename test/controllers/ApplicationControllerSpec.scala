@@ -9,7 +9,6 @@ import play.api.http.Status
 import play.api.test.Helpers._
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.Result
-import repositories.DataRepository
 
 import scala.concurrent.Future
 
@@ -160,7 +159,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
   "ApplicationController .update()" should {
 
-    "Update a book in the database by id" in {
+    "return 202 accepted with body" in {
       beforeEach()
 
       val createRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
@@ -235,7 +234,43 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
       contentAsJson(deleteResult).as[String] shouldBe "No item found with id: abc"
       afterEach()
     }
+  }
 
+
+  "ApplicationController .updateField" should {
+    "return 202 Accepted" in {
+      beforeEach()
+
+      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val createdResult: Future[Result] = TestApplicationController.create()(request)
+      status(createdResult) shouldBe Status.CREATED
+
+
+      val updateFieldRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val updateFieldResult = TestApplicationController.updateField("abcd", "name", "newName")(updateFieldRequest)
+
+      status(updateFieldResult) shouldBe Status.ACCEPTED
+      afterEach()
+    }
+    "return 404 Not Found" in {
+      beforeEach()
+
+      val updateFieldRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val updateFieldResult = TestApplicationController.updateField("hello", "name", "newName")(updateFieldRequest)
+
+      status(updateFieldResult) shouldBe Status.NOT_FOUND
+      afterEach()
+    }
+
+    "return 500 Internal Server Error" in {
+      beforeEach()
+      val apiError:APIError = APIError.BadAPIResponse(500, "error message")
+      val updateFieldRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val updateFieldResult = TestApplicationController.updateField("hello", "pageCount", "notInt")(updateFieldRequest)
+
+      status(updateFieldResult) shouldBe apiError.httpResponseStatus
+      afterEach()
+    }
   }
 
   override def beforeEach(): Unit = await(repository.deleteAll())
