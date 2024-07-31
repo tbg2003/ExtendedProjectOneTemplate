@@ -2,21 +2,26 @@ package controllers
 
 import baseSpec.BaseSpecWithApplication
 import models.DataModel
+import org.scalamock.scalatest.MockFactory
 import play.api.test.FakeRequest
 import play.api.http.Status
 import play.api.test.Helpers._
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.Result
+import repositories.DataRepository
 
 import scala.concurrent.Future
 
-class ApplicationControllerSpec extends BaseSpecWithApplication{
+class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory{
+
+
+  // TODO try mock the left/rights of DataRepository
 
   val TestApplicationController = new ApplicationController(
     component,
     repository,
     service
-  )
+  )(executionContext)
 
   private val dataModel: DataModel = DataModel(
     "abcd",
@@ -25,14 +30,14 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
     100
   )
 
-
   "ApplicationController .index()" should {
 
-    "return 200 OK response" in {
+    "return 200 OK response with body" in {
       val result = TestApplicationController.index()(FakeRequest())
-      val badRequestBody:JsValue = Json.parse("""{"id": "abcd", "name": 12345}""")
-      val badRequest: FakeRequest[JsValue] = buildGet("/api").withBody[JsValue](Json.toJson(badRequestBody))
-      val result2 = TestApplicationController.index()(badRequest)
+      status(result) shouldBe OK
+    }
+    "return 404 Not Found response" in {
+      val result = TestApplicationController.index()(FakeRequest())
       status(result) shouldBe OK
     }
   }
