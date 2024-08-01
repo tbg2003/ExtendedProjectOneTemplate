@@ -13,15 +13,17 @@ class LibraryConnector @Inject()(ws: WSClient) {
   def get[Response](url: String)(implicit rds: OFormat[Response], ec: ExecutionContext): EitherT[Future, APIError, Response] = {
     val request: WSRequest = ws.url(url)
     val response: Future[WSResponse] = request.get()
+
     EitherT {
-      response
-        .map {
-          result =>
-            Right(result.json.as[Response])
+      response.map { result =>
+        if (result.status == 200) {
+          Right(result.json.as[Response])
+        } else {
+          Left(APIError.BadAPIResponse(result.status, result.statusText))
         }
-        .recover { case _: WSResponse =>
-          Left(APIError.BadAPIResponse(500, "Could not connect"))
-        }
+      }.recover { case ex: Throwable =>
+        Left(APIError.BadAPIResponse(500, "Could not connect"))
+      }
     }
   }
 }
