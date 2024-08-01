@@ -108,16 +108,17 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
       afterEach()
     }
 
-    "return 404 Not Found with body" when {
+    "return 404 Not Found with body" in {
       beforeEach()
+
       val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
       status(createdResult) shouldBe Status.CREATED
 
-      val readResult: Future[Result] = TestApplicationController.read("abc")(FakeRequest())
+      val newReadResult = TestApplicationController.read("abc")(FakeRequest())
 
-      status(readResult) shouldBe Status.NOT_FOUND
-      contentAsJson(readResult).as[String] shouldBe "No items found with id:abc"
+      status(newReadResult) shouldBe Status.NOT_FOUND
+      contentAsJson(newReadResult).as[String] shouldBe "No items found with id:abc"
 
       afterEach()
     }

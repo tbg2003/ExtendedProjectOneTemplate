@@ -1,7 +1,7 @@
 package controllers
 
 import com.mongodb.client.result.{DeleteResult, UpdateResult}
-import repositories.DataRepository
+import repositories.{DataRepository}
 import models.{APIError, DataModel}
 import org.mongodb.scala.result
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
@@ -24,7 +24,7 @@ class ApplicationController @Inject()(
                                      ) (implicit val ec: ExecutionContext)extends BaseController{
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
-    dataRepository.index().map{
+    repoService.index().map{
       case Right(item: Seq[DataModel]) => Ok {Json.toJson(item)}
       case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
     }
@@ -33,7 +33,7 @@ class ApplicationController @Inject()(
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request.body.validate[DataModel] match {
       case JsSuccess(dataModel, _) =>
-        dataRepository.create(dataModel).map{
+        repoService.create(dataModel).map{
           case Right(createdDataModel) => Created(Json.toJson(createdDataModel))
           case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
         }
@@ -42,7 +42,7 @@ class ApplicationController @Inject()(
   }
 
   def read(id: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    dataRepository.read(id).map {
+    repoService.read(id).map {
       case Right(Some(item: DataModel)) => Ok(Json.toJson(item))
       case Right(None) => NotFound(Json.toJson(s"No items found with id:$id"))
       case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
@@ -50,7 +50,7 @@ class ApplicationController @Inject()(
   }
 
   def readByName(name: String): Action[AnyContent] = Action.async{implicit request: Request[AnyContent] =>
-    dataRepository.readByName(name).map {
+    repoService.readByName(name).map {
       case Right(Some(item: DataModel)) => Ok(Json.toJson(item))
       case Right(None) => NotFound(Json.toJson(s"No items found with name:$name"))
       case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
@@ -59,7 +59,7 @@ class ApplicationController @Inject()(
   def updateField(id:String, field:String, value:String): Action[JsValue] = Action.async(parse.json){implicit request =>
     val cleanField:String = field.strip().toLowerCase
     val cleanValue:String = value.strip().toLowerCase
-    dataRepository.updateField(id, cleanField, cleanValue).map {
+    repoService.updateField(id, cleanField, cleanValue).map {
       case Right(result: UpdateResult) =>
         if( result.wasAcknowledged()) Accepted
         else NotFound(Json.obj("message" -> s"No item found with id: $id"))
@@ -71,7 +71,7 @@ class ApplicationController @Inject()(
     request.body.validate[DataModel] match {
       case JsSuccess(dataModel, _) =>
         // further validation of fields
-      dataRepository.update(id, dataModel).map {
+      repoService.update(id, dataModel).map {
         case Right(result: UpdateResult) =>
           if( result.wasAcknowledged()) Accepted(Json.toJson(dataModel))
           else NotFound(Json.obj("message" -> s"No item found with id: $id"))
@@ -83,7 +83,7 @@ class ApplicationController @Inject()(
     }
 
   def delete(id: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    dataRepository.delete(id).map {
+    repoService.delete(id).map {
       case Right(result: result.DeleteResult) =>
         if (result.getDeletedCount > 0) Accepted
         else NotFound(Json.obj("message" -> s"No item found with id: $id"))
