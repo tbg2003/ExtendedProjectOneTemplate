@@ -14,7 +14,6 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ApplicationController @Inject()(
                                        val controllerComponents: ControllerComponents,
-                                       val dataRepository: DataRepository,
                                        val service: ApplicationService,
                                        val repoService: RepositoryService
                                      ) (implicit val ec: ExecutionContext)extends BaseController{
