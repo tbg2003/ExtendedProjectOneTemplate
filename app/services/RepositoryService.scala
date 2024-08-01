@@ -3,15 +3,15 @@ package services
 import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel}
 import org.mongodb.scala.result
-import repositories.DataRepository
+import repositories.MockRepository
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class RepositoryService @Inject()(dataRepository: DataRepository){
+class RepositoryService @Inject()(mockRepository: MockRepository){
 
   def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  = {
-    dataRepository.index().map{
+    mockRepository.index().map{
       case Left(error) => Left(error)
       case Right(item: Seq[DataModel]) => Right(item)
       case Right(_) => Left(APIError.BadAPIResponse(500, "unexpected error occurred"))
@@ -19,7 +19,7 @@ class RepositoryService @Inject()(dataRepository: DataRepository){
   }
 
   def create(book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, DataModel]] = {
-    dataRepository.create(book).map{
+    mockRepository.create(book).map{
       case Left(error) => Left(error)
       case Right(item : DataModel) => Right(item)
       case Right(_) => Left(APIError.BadAPIResponse(500, "unexpected error occurred"))
@@ -28,7 +28,7 @@ class RepositoryService @Inject()(dataRepository: DataRepository){
 
 
   def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
-    dataRepository.readByName(name).map{
+    mockRepository.readByName(name).map{
       case Left(error) => Left(error)
       case Right(Some(item:DataModel)) => Right(Some(item))
       case Right(Some(error)) => Left(APIError.BadAPIResponse(500, s"Error: $error not of type DataModel"))
@@ -38,7 +38,7 @@ class RepositoryService @Inject()(dataRepository: DataRepository){
 
 
   def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
-    dataRepository.read(id).map{
+    mockRepository.read(id).map{
       case Left(error) => Left(error)
       case Right(Some(item:DataModel)) => Right(Some(item))
       case Right(Some(error)) => Left(APIError.BadAPIResponse(500, s"Error: $error not of type DataModel"))
@@ -48,7 +48,7 @@ class RepositoryService @Inject()(dataRepository: DataRepository){
 
 
   def update(id: String, book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
-    dataRepository.update(id, book).map {
+    mockRepository.update(id, book).map {
       case Left(error) => Left(error)
       case Right(result: UpdateResult) =>
         if( result.wasAcknowledged()) Right(result)
@@ -59,14 +59,14 @@ class RepositoryService @Inject()(dataRepository: DataRepository){
 
 
   def delete(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] = {
-    dataRepository.delete(id).map {
+    mockRepository.delete(id).map {
       case Left(error) => Left(error)
       case Right(value) => Right(value)
     }
   }
 
   def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
-    dataRepository.updateField(id, field, value).map {
+    mockRepository.updateField(id, field, value).map {
       case Left(error) => Left(error)
       case Right(value) => Right(value)
     }
