@@ -18,11 +18,11 @@ import scala.concurrent.{ExecutionContext, Future}
 trait MockRepository{
   def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]
   def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]]
-  def readByName(name: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
-  def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
-  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
-  def updateField(id: String, field: String, value:String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
-  def delete(id: String): Future[Either[APIError.BadAPIResponse, result.DeleteResult]]
+  def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
+  def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
+  def update(id: String, book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
+  def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
+  def delete(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.DeleteResult]]
 }
 
 @Singleton
@@ -55,7 +55,7 @@ class DataRepository @Inject()(
       .insertOne(book)
       .toFuture().map(_ => Right(book)
       ).recover{
-        case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+        case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred when trying to add book with id: ${book._id}"))
       }
 
   private def byID(id: String): Bson =
@@ -68,21 +68,21 @@ class DataRepository @Inject()(
       Filters.equal("title", name)
     )
 
-  def readByName(name: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
+  def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
     collection.find(byName(name)).headOption.map { data =>
       Right(data)
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
+  def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
     collection.find(byID(id)).headOption.map { data =>
       Right(data)
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
+  def update(id: String, book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
     collection.replaceOne(
       filter = byID(id),
       replacement = book,
@@ -91,7 +91,7 @@ class DataRepository @Inject()(
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-  def delete(id: String): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] =
+  def delete(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] =
     collection.deleteOne(byID(id)).toFuture().map { deleteResult =>
       if (deleteResult.getDeletedCount > 0) Right(deleteResult)
       else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
@@ -100,7 +100,7 @@ class DataRepository @Inject()(
     }
 
 
-  private def getUpdateOperation(field:String, value:String):Either[APIError.BadAPIResponse, Bson] = {
+  private def getUpdateOperation(field:String, value:String)(implicit ec: ExecutionContext):Either[APIError.BadAPIResponse, Bson] = {
     field match {
       case "name" => Right(set("name", value))
       case "description" => Right(set("description", value))
@@ -112,7 +112,7 @@ class DataRepository @Inject()(
         }
     }
 
-  def updateField(id: String, field: String, value:String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
+  def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
     getUpdateOperation(field, value) match {
       case Left(error) => Future(Left(error))
       case Right(updateOperation) =>
