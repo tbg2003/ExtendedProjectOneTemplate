@@ -5,8 +5,10 @@ import repositories.DataRepository
 import models.{APIError, DataModel}
 import org.mongodb.scala.result
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request}
-import services.{ApplicationService, RepositoryService}
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
+import play.core.j.JavaAction
+import services.{ApplicationService, Book, RepositoryService}
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -94,4 +96,20 @@ class ApplicationController @Inject()(
       case Left(_) => InternalServerError(Json.obj("message" -> "An unexpected error occurred"))
     }
   }
+  def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
+    service.getGoogleBook(search = "isbn", term = isbn).value.flatMap {
+      case Left(error) => Future.successful(Status(error.httpResponseStatus)(Json.toJson(error.reason)))
+      case Right(book) =>
+        // Store the book in MongoDB
+        repoService.create(Json.toJson(book).as[DataModel]).flatMap {
+          case Left(error) => Future.successful(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
+          case Right(dataModel: DataModel) =>
+            // Retrieve the book from MongoDB and render it
+            val dataAsBook = Json.toJson(dataModel).as[Book]
+            Future.successful(Ok(views.html.i))
+        }
+    }
+  }
+
+
 }

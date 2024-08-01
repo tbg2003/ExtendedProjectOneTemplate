@@ -23,6 +23,7 @@ trait MockRepository{
   def update(id: String, book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
   def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
   def delete(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.DeleteResult]]
+  def readByISBN(isbn: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
 }
 
 @Singleton
@@ -67,9 +68,20 @@ class DataRepository @Inject()(
     Filters.and(
       Filters.equal("title", name)
     )
+  private def byISBN(isbn:String):Bson =
+    Filters.and(
+      Filters.equal("title", isbn)
+    )
 
   def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
     collection.find(byName(name)).headOption.map { data =>
+      Right(data)
+    }.recover {
+      case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+    }
+
+  def readByISBN(isbn: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
+    collection.find(byISBN(isbn)).headOption.map { data =>
       Right(data)
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
@@ -102,8 +114,8 @@ class DataRepository @Inject()(
 
   private def getUpdateOperation(field:String, value:String)(implicit ec: ExecutionContext):Either[APIError.BadAPIResponse, Bson] = {
     field match {
-      case "name" => Right(set("name", value))
-      case "description" => Right(set("description", value))
+      case "title" => Right(set("title", value))
+      case "subtitle" => Right(set("subtitle", value))
       case "pagecount" =>
         try{
           Right(set("pageCount", value.toInt))
@@ -121,11 +133,8 @@ class DataRepository @Inject()(
           update = updateOperation,
           options = new UpdateOptions().upsert(true)
         ).toFuture().
-          map { updatedResult =>
-            if (updatedResult.getMatchedCount > 0) Right(updatedResult)
-            else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
-          }.recover{
-          case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
+          map(Right(_)).recover{
+          case _: Exception => Left(APIError.BadAPIResponse(500, s"could not update $field field of book with id: $id to $value"))
         }
     }
   }

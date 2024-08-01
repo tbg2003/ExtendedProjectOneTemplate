@@ -27,14 +27,14 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
     "abcd",
     "isbn",
     "test name",
-    Seq("test author"),
+    "test subtitle",
     100
   )
   private val dataModel2: DataModel = DataModel(
     "abc",
     "isbn",
     "test name 2",
-    Seq("test author 1", "test author 2"),
+    "test subtitle 2",
     200
   )
 
@@ -250,7 +250,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
 
       val updateFieldRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
-      val updateFieldResult = TestApplicationController.updateField("abcd", "name", "newName")(updateFieldRequest)
+      val updateFieldResult = TestApplicationController.updateField("abcd", "title", "newName")(updateFieldRequest)
 
       status(updateFieldResult) shouldBe Status.ACCEPTED
       afterEach()
@@ -259,7 +259,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
       beforeEach()
 
       val updateFieldRequest: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
-      val updateFieldResult = TestApplicationController.updateField("hello", "name", "newName")(updateFieldRequest)
+      val updateFieldResult = TestApplicationController.updateField("hello", "title", "newName")(updateFieldRequest)
 
       status(updateFieldResult) shouldBe Status.NOT_FOUND
       afterEach()

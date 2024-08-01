@@ -36,6 +36,15 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
     }
   }
 
+  def readByISBN(isbn: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
+    mockRepository.readByISBN(isbn).map{
+      case Left(error) => Left(error)
+      case Right(Some(item:DataModel)) => Right(Some(item))
+      case Right(Some(error)) => Left(APIError.BadAPIResponse(500, s"Error: $error not of type DataModel"))
+      case Right(None) => Left(APIError.BadAPIResponse(404, s"No Book Found with isbn: $isbn"))
+    }
+  }
+
 
   def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
     mockRepository.read(id).map{
@@ -68,7 +77,9 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
   def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
     mockRepository.updateField(id, field, value).map {
       case Left(error) => Left(error)
-      case Right(value) => Right(value)
+      case Right(result) =>
+        if (result.getMatchedCount > 0) Right(result)
+        else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
     }
   }
 

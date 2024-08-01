@@ -2,9 +2,9 @@ package models
 import play.api.libs.json.{Json, OFormat}
 
 case class DataModel(_id: String,
-                     isbn: String,
+                     id: String,
                      title: String,
-                     authors: Seq[String],
+                     subtitle: String,
                      pageCount: Int)
 
 object DataModel {

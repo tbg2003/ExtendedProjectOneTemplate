@@ -1,15 +1,16 @@
 package services
 
 import baseSpec.BaseSpec
+import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel}
+import org.bson.{BsonType, BsonValue}
+import org.mongodb.scala.bson.{BsonDocument, BsonValue}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.mvc.Results.status
 import repositories.{DataRepository, MockRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
-
 
 class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures with GuiceOneAppPerSuite{
   val mockDataRepo = mock[MockRepository]
@@ -20,7 +21,7 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
     "abcd",
     "isbn",
     "test name",
-    Seq("test author"),
+    "test subtitle",
     100
   )
 
@@ -55,6 +56,8 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
       }
     }
   }
+
+
   "create" should {
     "return a Right" when {
       "dataRepository .create returns a Right" in {
