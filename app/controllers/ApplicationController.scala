@@ -100,7 +100,7 @@ class ApplicationController @Inject()(
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
-      case Left(error) => Future(Status(error.httpResponseStatus)(Json.toJson(error.reason)))
+      case Left(error) => Future.successful(Status(error.httpResponseStatus)(views.html.APIError(error))
       case Right(book) =>
         // if got book then store in mongo
         val dataObj = new DataModel(

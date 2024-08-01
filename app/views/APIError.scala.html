@@ -2,11 +2,11 @@
 
 @(error: APIError)
 
-@main(Error Occurred){
+@main("Error Occurred") {
 <div class="container h-100 d-flex justify-content-center">
     <div class="jumbotron my-auto">
-        <h1 class="display-3">Error: @error.httpResponseStatus </h1>
-        <h2 class="display-3"> @error.reason </h2>
+        <h1 class="display-3">Error: @error.upstreamStatus </h1>
+        <h2 class="display-3"> @error.upstreamMessage </h2>
     </div>
 </div>
 }
