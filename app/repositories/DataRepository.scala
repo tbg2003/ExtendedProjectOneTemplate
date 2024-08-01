@@ -65,7 +65,7 @@ class DataRepository @Inject()(
 
   private def byName(name:String):Bson =
     Filters.and(
-      Filters.equal("name", name)
+      Filters.equal("title", name)
     )
 
   def readByName(name: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =

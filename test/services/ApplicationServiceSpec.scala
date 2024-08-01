@@ -20,8 +20,8 @@ class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures
 
   val gameOfThrones: JsValue = Json.obj(
     "_id" -> "someId",
-    "name" -> "A Game of Thrones",
-    "description" -> "The best book!!!",
+    "title" -> "A Game of Thrones",
+    "authors" -> Seq("Author1"),
     "pageCount" -> 100
   )
 

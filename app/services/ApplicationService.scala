@@ -13,8 +13,8 @@ class ApplicationService @Inject()(connector: LibraryConnector) {
     result.map { dataModel =>
       Book(
         _id = dataModel._id,
-        name = dataModel.name,
-        description = dataModel.description,
+        title = dataModel.title,
+        authors = dataModel.authors,
         pageCount = dataModel.pageCount
       )
     }
