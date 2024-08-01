@@ -12,7 +12,6 @@ class ApplicationService @Inject()(connector: LibraryConnector) {
     val result = connector.get[DataModel](urlOverride.getOrElse(s"https://www.googleapis.com/books/v1/volumes?q=$search%$term"))
     result.map { dataModel =>
       Book(
-        isbn = dataModel.id,
         title = dataModel.title,
         subtitle = dataModel.subtitle,
         pageCount = dataModel.pageCount

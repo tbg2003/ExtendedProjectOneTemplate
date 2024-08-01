@@ -3,7 +3,6 @@ package services
 import play.api.libs.json.{Json, OFormat}
 
 case class Book(
-               isbn:String,
                title:String,
                subtitle:String,
                pageCount:Int

@@ -19,7 +19,6 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
 
   private val dataModel: DataModel = DataModel(
     "abcd",
-    "isbn",
     "test name",
     "test subtitle",
     100

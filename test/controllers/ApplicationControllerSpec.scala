@@ -25,14 +25,12 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
   private val dataModel: DataModel = DataModel(
     "abcd",
-    "isbn",
     "test name",
     "test subtitle",
     100
   )
   private val dataModel2: DataModel = DataModel(
     "abc",
-    "isbn",
     "test name 2",
     "test subtitle 2",
     200

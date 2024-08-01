@@ -1,13 +1,13 @@
 @import services.Book
-@(title: String)
 
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>@book.title</title>
-    </head>
-    <body>
-    <p>description of book</p>
-    </body>
-</html>
+@(book: Book)
+
+@main("Book Details") {
+<div class="container h-100 d-flex justify-content-center">
+    <div class="jumbotron my-auto">
+        <h1 class="display-3">@book.title</h1>
+        <h2 class="display-5">@book.subtitle</h2>
+        <p class="lead"><strong>Page Count:</strong> @book.pageCount</p>
+    </div>
+</div>
+}

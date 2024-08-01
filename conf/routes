@@ -22,5 +22,7 @@ GET     /library/google/:search/:term      controllers.ApplicationController.get
 
 
 # Part 5
-GET     /api/readName/:name          controllers.ApplicationController.readByName(name: String)
-PUT     /api/updateField/:id/:field/:value                 controllers.ApplicationController.updateField(id: String, field:String, value:String)
+GET     /api/readName/:name                     controllers.ApplicationController.readByName(name: String)
+PUT     /api/updateField/:id/:field/:value      controllers.ApplicationController.updateField(id: String, field:String, value:String)
+
+GET     /api/display/:isbn                      controllers.ApplicationController.displayBook(isbn: String)

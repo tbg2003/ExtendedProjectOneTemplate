@@ -8,6 +8,7 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
 import play.core.j.JavaAction
 import services.{ApplicationService, Book, RepositoryService}
+import views.html
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -97,19 +98,23 @@ class ApplicationController @Inject()(
     }
   }
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
+    // get book from google by isbn
     service.getGoogleBook(search = "isbn", term = isbn).value.flatMap {
-      case Left(error) => Future.successful(Status(error.httpResponseStatus)(Json.toJson(error.reason)))
+      case Left(error) => Future(Status(error.httpResponseStatus)(Json.toJson(error.reason)))
       case Right(book) =>
-        // Store the book in MongoDB
-        repoService.create(Json.toJson(book).as[DataModel]).flatMap {
-          case Left(error) => Future.successful(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
-          case Right(dataModel: DataModel) =>
-            // Retrieve the book from MongoDB and render it
-            val dataAsBook = Json.toJson(dataModel).as[Book]
-            Future.successful(Ok(views.html.i))
+        // if got book then store in mongo
+        val dataObj = new DataModel(
+          _id = isbn,
+          title = book.title,
+          subtitle = book.subtitle,
+          pageCount = book.pageCount
+        )
+        repoService.create(dataObj).flatMap {
+          case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
+          case Right(storedBookData: DataModel) => Future(Ok(Json.toJson(storedBookData)))
+            // if successfully stored then access books stored and display
         }
     }
   }
-
 
 }

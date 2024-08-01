@@ -12,14 +12,13 @@ class LibraryConnector @Inject()(ws: WSClient) {
     val request = ws.url(url)
     val response = request.get()
     EitherT {
-      response
-        .map {
-          result =>
-            Right(result.json.as[Response])
-        }
-        .recover { case _: WSResponse =>
-          Left(APIError.BadAPIResponse(500, "Could not connect"))
-        }
+      response.map { result =>
+        println(s"Received JSON: ${result.json}")  // Log the JSON response
+        Right(result.json.as[Response])
+      }.recover { case ex: Throwable =>
+        println(s"Error: ${ex.getMessage}")  // Log any errors
+        Left(APIError.BadAPIResponse(500, "Could not connect"))
+      }
     }
   }
 }
