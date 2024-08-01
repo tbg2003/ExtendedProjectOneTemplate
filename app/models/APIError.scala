@@ -1,7 +1,6 @@
 package models
 
 import play.api.http.Status
-import play.api.libs.json.{Json, OFormat}
 
 sealed abstract class APIError(
                                 val httpResponseStatus: Int,

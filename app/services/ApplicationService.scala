@@ -3,7 +3,6 @@ package services
 import cats.data.EitherT
 import connectors.LibraryConnector
 import models.{APIError, DataModel}
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 

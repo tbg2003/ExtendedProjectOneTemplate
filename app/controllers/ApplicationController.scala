@@ -1,18 +1,14 @@
 package controllers
 
-import com.mongodb.client.result.{DeleteResult, UpdateResult}
-import repositories.{DataRepository}
+import com.mongodb.client.result.UpdateResult
+import repositories.DataRepository
 import models.{APIError, DataModel}
 import org.mongodb.scala.result
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, WrappedRequest}
-import play.mvc.Results.status
-import services.{ApplicationService, Book, RepositoryService}
-
+import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request}
+import services.{ApplicationService, RepositoryService}
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.impl.Promise
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
 
 
 @Singleton

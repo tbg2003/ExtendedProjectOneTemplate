@@ -1,16 +1,13 @@
 package repositories
 
-import cats.data.EitherT
 import models.{APIError, DataModel}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.{empty, equal}
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
 import org.mongodb.scala.result
-import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
