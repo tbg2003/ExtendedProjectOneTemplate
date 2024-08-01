@@ -9,14 +9,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class ApplicationService @Inject()(connector: LibraryConnector) {
 
   def getGoogleBook(urlOverride: Option[String] = None, search: String, term: String)(implicit ec: ExecutionContext):EitherT[Future, APIError, Book] = {
-    val result = connector.get[DataModel](urlOverride.getOrElse(s"https://www.googleapis.com/books/v1/volumes?q=$search%$term"))
-    result.map { dataModel =>
+    val result = connector.get[DataModel](urlOverride.getOrElse(s"https://www.googleapis.com/books/v1/volumes?q=$search+$term"))
+    result.map { result =>
       Book(
-        title = dataModel.title,
-        subtitle = dataModel.subtitle,
-        pageCount = dataModel.pageCount
-      )
+        title = result.title,
+        subtitle = result.subtitle,
+        pageCount = result.pageCount)
     }
   }
-
 }
+

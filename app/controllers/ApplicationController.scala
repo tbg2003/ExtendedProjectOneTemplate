@@ -99,7 +99,7 @@ class ApplicationController @Inject()(
   }
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
-    service.getGoogleBook(search = "isbn", term = isbn).value.flatMap {
+    service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
       case Left(error) => Future(Status(error.httpResponseStatus)(Json.toJson(error.reason)))
       case Right(book) =>
         // if got book then store in mongo
