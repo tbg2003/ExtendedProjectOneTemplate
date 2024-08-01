@@ -97,6 +97,7 @@ class ApplicationController @Inject()(
       case Left(_) => InternalServerError(Json.obj("message" -> "An unexpected error occurred"))
     }
   }
+
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
@@ -111,10 +112,12 @@ class ApplicationController @Inject()(
         )
         repoService.create(dataObj).flatMap {
           case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
-          case Right(storedBookData: DataModel) => Future(Ok(Json.toJson(storedBookData)))
-            // if successfully stored then access books stored and display
+          case Right(storedBookData: DataModel) =>
+            // if stored then print the book
+            Future(Ok(Json.toJson(dataObj)))
         }
     }
+
   }
 
 }
