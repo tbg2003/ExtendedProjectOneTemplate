@@ -1,0 +1,12 @@
+@import models.APIError
+
+@(error: APIError)
+
+@main(Error Occurred){
+<div class="container h-100 d-flex justify-content-center">
+    <div class="jumbotron my-auto">
+        <h1 class="display-3">Error: @error.httpResponseStatus </h1>
+        <h2 class="display-3"> @error.reason </h2>
+    </div>
+</div>
+}

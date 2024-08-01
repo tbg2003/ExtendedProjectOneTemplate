@@ -8,7 +8,6 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
 import play.core.j.JavaAction
 import services.{ApplicationService, Book, RepositoryService}
-import views.html
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -114,7 +113,11 @@ class ApplicationController @Inject()(
           case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
           case Right(storedBookData: DataModel) =>
             // if stored then print the book
-            Future(Ok(Json.toJson(dataObj)))
+            repoService.read(isbn).flatMap {
+              case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
+              case Right(Some(data:DataModel)) => Future(Ok(views.html.book(book)))
+            }
+
         }
     }
 
