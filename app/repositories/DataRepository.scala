@@ -1,5 +1,6 @@
 package repositories
 
+import com.google.inject.ImplementedBy
 import models.{APIError, DataModel}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.{empty, equal}
@@ -8,8 +9,21 @@ import org.mongodb.scala.model._
 import org.mongodb.scala.result
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+
+
+@ImplementedBy(classOf[DataRepository])
+trait MockRepository{
+  def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]
+  def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]]
+  def readByName(name: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
+  def read(id: String): Future[Either[APIError.BadAPIResponse, Option[DataModel]]]
+  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
+  def updateField(id: String, field: String, value:String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
+  def delete(id: String): Future[Either[APIError.BadAPIResponse, result.DeleteResult]]
+}
 
 @Singleton
 class DataRepository @Inject()(
@@ -22,7 +36,7 @@ class DataRepository @Inject()(
     Indexes.ascending("_id")
   )),
   replaceIndexes = false
-) {
+) with MockRepository{
 
   def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  = {
     collection
