@@ -13,4 +13,9 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
   val mockDataRepo = mock[MockRepository]
   implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   val testService = new RepositoryService(mockDataRepo)
+
+  "index" should {
+
+    "return " in {true}
+  }
 }
