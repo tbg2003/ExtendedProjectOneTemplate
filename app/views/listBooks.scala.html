@@ -22,11 +22,11 @@
             <td>@book.title</td>
             <td>@book.subtitle</td>
             <td>@book.pageCount</td>
-            <td>
+            <td class="td-btn-item">
                 @helper.form(action = routes.ApplicationController.deleteBook(book._id), 'method -> "POST") {
                 @helper.CSRF.formField
                 <input type="hidden" name="_method" value="DELETE"/>
-                <button type="submit" class="btn btn-danger">Delete</button>
+                <button type="submit" class="btn btn-delete">Delete</button>
                 }
             </td>
         </tr>

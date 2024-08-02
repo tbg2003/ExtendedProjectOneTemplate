@@ -4,13 +4,14 @@
 @(bookForm: Form[DataModel])(implicit request: RequestHeader, messages: Messages)
 
 @main("Add Book"){
-<div>
+<div class="container">
+    <h1>Create New Book</h1>
     @helper.form(action = routes.ApplicationController.addBookForm()) {
     @helper.CSRF.formField
-    @helper.inputText(bookForm("_id"))
-    @helper.inputText(bookForm("title"))
-    @helper.inputText(bookForm("subtitle"))
-    @helper.inputText(bookForm("pageCount"))
+    @helper.inputText(bookForm("_id"), Symbol("_label") -> "Book ISBN")
+    @helper.inputText(bookForm("title"), Symbol("_label") -> "Book Title")
+    @helper.inputText(bookForm("subtitle"), Symbol("_label") -> "Book Subtitle")
+    @helper.inputText(bookForm("pageCount"), Symbol("_label") -> "Book Page Count")
     <input class="submitButton" type="submit" value="Submit">
     }
 </div>
