@@ -28,6 +28,9 @@ class ApplicationController @Inject()(
       "isbn" -> nonEmptyText
     )
   )
+  def home(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    Future.successful(Ok(views.html.index()))
+  }
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
     repoService.index().map{
