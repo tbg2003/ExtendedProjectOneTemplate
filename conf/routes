@@ -43,3 +43,7 @@ GET     /showbook/:id            controllers.ApplicationController.showBook(id:S
 
 GET     /findBookByISBN             controllers.ApplicationController.searchISBN()
 POST    /findBookByISBN             controllers.ApplicationController.getGoogleBookForm()
+
+# List all books in database
+GET     /books                          controllers.ApplicationController.listBooks()
+POST    /books:id                        controllers.ApplicationController.deleteBook(id:String)

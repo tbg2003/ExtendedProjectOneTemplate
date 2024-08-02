@@ -29,6 +29,7 @@ class ApplicationController @Inject()(
     )
   )
   def home(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
     Future.successful(Ok(views.html.index()))
   }
 
@@ -65,6 +66,7 @@ class ApplicationController @Inject()(
       case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
     }
   }
+
   def updateField(id:String, field:String, value:String): Action[JsValue] = Action.async(parse.json){implicit request =>
     val cleanField:String = field.strip().toLowerCase
     val cleanValue:String = value.strip().toLowerCase
@@ -92,12 +94,23 @@ class ApplicationController @Inject()(
     }
 
   def delete(id: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
     repoService.delete(id).map {
       case Right(result: result.DeleteResult) =>
         if (result.getDeletedCount > 0) Accepted
-        else NotFound(Json.obj("message" -> s"No item found with id: $id"))
+        else NotFound(s"No item found with id: $id")
 
-      case Left(error) => Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage))
+      case Left(error) => Status(error.upstreamStatus)(views.html.error(error.upstreamStatus)(error.upstreamMessage))
+    }
+  }
+  def deleteBook(id: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
+    repoService.delete(id).map {
+      case Right(result: result.DeleteResult) =>
+        if (result.getDeletedCount > 0) Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book deleted successfully")
+        else NotFound(views.html.error(NOT_FOUND)(s"No item found with id: $id"))
+
+      case Left(error) => Status(error.upstreamStatus)(views.html.error(error.upstreamStatus)(error.upstreamMessage))
     }
   }
 
@@ -173,6 +186,7 @@ class ApplicationController @Inject()(
   }
 
   def getGoogleBookForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
     isbnForm.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(views.html.searchISBN(formWithErrors))),
       isbn => {
@@ -183,5 +197,13 @@ class ApplicationController @Inject()(
 
   def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.searchISBN(isbnForm))
+  }
+
+  def listBooks(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
+    repoService.index().map {
+      case Right(books: Seq[DataModel]) => Ok(views.html.listBooks(books))
+      case Left(error) => Status(error.upstreamStatus)(views.html.error(error.upstreamStatus)(error.upstreamMessage))
+    }
   }
 }
