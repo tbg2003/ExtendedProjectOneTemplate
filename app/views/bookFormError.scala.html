@@ -6,8 +6,8 @@
 @main("Add Book"){
 <div>
     <div>
-    <h1>ERROR @errorCode :</h1>
-    <h2>@errorMessage</h2>
+        <h1>ERROR @errorCode :</h1>
+        <h2>@errorMessage</h2>
     </div><div>
     @helper.form(action = routes.ApplicationController.addBookForm()) {
     @helper.CSRF.formField

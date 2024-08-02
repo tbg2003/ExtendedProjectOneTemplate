@@ -115,7 +115,7 @@ class ApplicationController @Inject()(
     accessToken //call the accessToken method
     DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
       formWithErrors => {
-        Future(Redirect(routes.ApplicationController.addBook()))
+        Future.successful(Ok(views.html.bookFormError(DataModel.dataModelForm)(BAD_REQUEST)("Invalid input")))
       },
       formData => {
         //here write how you would use this data to create a new book (DataModel)
@@ -133,7 +133,7 @@ class ApplicationController @Inject()(
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
-      case Left(error) => Future.successful(Status(error.httpResponseStatus)(Json.toJson(error.reason)))
+      case Left(error) => Future.successful(Ok(views.html.error(error.httpResponseStatus)(error.reason)))
       case Right(book) =>
         // if got book then store in mongo
         val dataObj = new DataModel(
@@ -143,13 +143,13 @@ class ApplicationController @Inject()(
           pageCount = book.pageCount
         )
         repoService.create(dataObj).flatMap {
-          case Left(error) => Future.successful(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
+          case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
           case Right(storedBookData: DataModel) =>
             // if stored then print the book
             repoService.read(isbn).flatMap {
-              case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
+              case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
               case Right(Some(data)) => Future.successful(Ok(views.html.book(book)))
-              case Right(None) => Future.successful(NotFound(Json.toJson(s"No items found with isbn: $isbn")))
+              case Right(None) => Future.successful(Ok(views.html.error(NOT_FOUND)(s"No book found with ISBN: $isbn")))
             }
 
         }
