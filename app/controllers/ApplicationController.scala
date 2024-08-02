@@ -106,11 +106,29 @@ class ApplicationController @Inject()(
    Future.successful(Ok(views.html.addBook(DataModel.dataModelForm)))
   }
 
-  def addBookForm(): Action[AnyContent] = ???
 
   def accessToken(implicit request: Request[_]) = {
     CSRF.getToken
   }
+
+  def addBookForm(): Action[AnyContent] =  Action.async {implicit request =>
+    accessToken //call the accessToken method
+    DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
+      formWithErrors => {
+        Future(Redirect(routes.ApplicationController.addBook()))
+      },
+      formData => {
+        //here write how you would use this data to create a new book (DataModel)
+        repoService.create(formData).map {
+          case Left(error) => Status(error.httpResponseStatus)(error.upstreamMessage)
+          case Right(dataModel) => Redirect(routes.ApplicationController.displayBook(dataModel._id))
+        }
+
+      }
+    )
+  }
+
+
 
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
