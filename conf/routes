@@ -34,3 +34,5 @@ GET     /example                           controllers.ApplicationController.exa
 GET     /addbook/form     controllers.ApplicationController.addBook()
 
 POST     /addbook/form     controllers.ApplicationController.addBookForm()
+
+GET     /showbook/:id            controllers.ApplicationController.showBook(id:String)

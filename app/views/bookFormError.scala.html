@@ -1,22 +1,17 @@
 @import models.DataModel
 @import helper._
 
-@(bookForm: Form[DataModel])(errorCode:Int)(errorMessage:String)(implicit request: RequestHeader, messages: Messages)
+@(bookForm: Form[DataModel])(implicit request: RequestHeader, messages: Messages)
 
 @main("Add Book"){
 <div>
-    <div>
-        <h1>ERROR @errorCode :</h1>
-        <h2>@errorMessage</h2>
-    </div><div>
     @helper.form(action = routes.ApplicationController.addBookForm()) {
     @helper.CSRF.formField
-    @helper.inputText(bookForm("id"))
+    @helper.inputText(bookForm("_id"))
     @helper.inputText(bookForm("title"))
     @helper.inputText(bookForm("subtitle"))
     @helper.inputText(bookForm("pageCount"))
     <input class="submitButton" type="submit" value="Submit">
     }
-</div>
 </div>
 }

@@ -7,7 +7,7 @@
 <div>
     @helper.form(action = routes.ApplicationController.addBookForm()) {
     @helper.CSRF.formField
-    @helper.inputText(bookForm("id"))
+    @helper.inputText(bookForm("_id"))
     @helper.inputText(bookForm("title"))
     @helper.inputText(bookForm("subtitle"))
     @helper.inputText(bookForm("pageCount"))

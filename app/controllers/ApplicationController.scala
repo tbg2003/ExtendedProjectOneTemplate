@@ -111,19 +111,30 @@ class ApplicationController @Inject()(
     CSRF.getToken
   }
 
+  def showBook(id: String): Action[AnyContent] = Action.async { implicit request =>
+    // Dummy implementation of fetching the book from the database
+    repoService.read(id).map {
+      case Left(error) => Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage))
+      case Right(Some(data)) =>
+        val book = Book(data._id, data.title, data.subtitle, data.pageCount)
+        Ok(views.html.book(book))
+      case Right(None) => Ok(views.html.error(NOT_FOUND)(s"No book found with id: $id"))
+    }
+  }
+
   def addBookForm(): Action[AnyContent] =  Action.async {implicit request =>
     accessToken //call the accessToken method
     DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
       formWithErrors => {
-        Future.successful(Ok(views.html.bookFormError(DataModel.dataModelForm)(BAD_REQUEST)("Invalid input")))
+        Future.successful(Ok(views.html.bookFormError(formWithErrors)))
       },
       formData => {
         //here write how you would use this data to create a new book (DataModel)
-        repoService.create(formData).map {
-          case Left(error) => Status(error.httpResponseStatus)(error.upstreamMessage)
-          case Right(dataModel) => Redirect(routes.ApplicationController.displayBook(dataModel._id))
+        repoService.create(formData).flatMap {
+          case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
+          case Right(dataModel) =>
+            Future.successful(Redirect(routes.ApplicationController.showBook(dataModel._id)))
         }
-
       }
     )
   }
