@@ -1,0 +1,150 @@
+/* Reset some default browser styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Body styling */
+body {
+    background-color: #f4f1e0; /* Light earthy tone */
+    color: #333; /* Dark grey for text */
+    line-height: 1.6;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Container for page content */
+.container {
+    max-width: 1200px;
+    width: 100%;
+    background-color: #fff; /* White background for content */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 8px; /* Rounded corners */
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Header styling */
+header {
+    width: 100%;
+    background-color: #6b8e23; /* Olive green */
+    padding: 20px 0;
+    text-align: center;
+    color: #fff;
+    border-radius: 8px 8px 0 0;
+}
+
+header h1 {
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.2em;
+}
+
+/* Main content styling */
+main {
+    padding: 20px;
+}
+
+h2, h3, h4 {
+    color: #6b8e23; /* Olive green for headings */
+    margin-bottom: 10px;
+}
+
+p {
+    margin-bottom: 20px;
+}
+
+/* Footer styling */
+footer {
+    width: 100%;
+    background-color: #6b8e23; /* Olive green */
+    padding: 10px 0;
+    text-align: center;
+    color: #fff;
+    border-radius: 0 0 8px 8px;
+    margin-top: 20px;
+}
+
+a {
+    color: #468966; /* Darker green for links */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Button styling */
+button {
+    background-color: #8fbc8f; /* Dark sea green */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #6b8e23; /* Olive green on hover */
+}
+
+/* Form elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="submit"] {
+    background-color: #8fbc8f; /* Dark sea green */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover {
+    background-color: #6b8e23; /* Olive green on hover */
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #6b8e23; /* Olive green for table header */
+    color: #fff;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
