@@ -4,18 +4,30 @@ import baseSpec.BaseSpecWithApplication
 import models.{APIError, DataModel}
 import org.mongodb.scala.model.Updates
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import play.api.test.FakeRequest
 import play.api.http.Status
 import play.api.test.Helpers._
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.Result
+import play.api.test.CSRFTokenHelper.CSRFRequest
+import repositories.MockRepository
+import services.RepositoryService
 
 import scala.concurrent.Future
 
-class ApplicationControllerSpec extends BaseSpecWithApplication{
+class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory {
 
 
-  // TODO try mock the left/rights of DataRepository
+  val mockDataRepo = mock[MockRepository]
+  val testRepoService = new RepositoryService(mockDataRepo)
+
+  val TestAppControllerWithMockRepo = new ApplicationController(
+    component,
+    service,
+    testRepoService
+  )(executionContext)
+
 
   val TestApplicationController = new ApplicationController(
     component,
@@ -271,6 +283,47 @@ class ApplicationControllerSpec extends BaseSpecWithApplication{
 
       status(updateFieldResult) shouldBe apiError.httpResponseStatus
       afterEach()
+    }
+  }
+
+
+  "ApplicationController .addBookForm" should {
+
+    "return BadRequest when form has errors" in {
+      val invalidRequest = FakeRequest(POST, "/addbook/from").withFormUrlEncodedBody(
+        "_id" -> "hello",
+        "title" -> "Sample Title",
+        "subtitle" -> "Sample Subtitle",
+        "pageCount" -> "Invalid PageCount"
+      ).withCSRFToken
+
+      val badFormResult = TestApplicationController.addBookForm().apply(invalidRequest)
+
+      status(badFormResult) mustBe OK
+      contentType(badFormResult) mustBe Some("text/html")
+      contentAsString(badFormResult) must include("Form Errors:")
+    }
+
+
+    "create a new book and redirect when form is valid" in {
+      val dataModel = DataModel("1234", "Sample Title", "Sample Subtitle", 100)
+
+      (mockDataRepo.create(_:DataModel))
+        .expects(dataModel)
+        .returning(Future(Right(dataModel)))
+        .once()
+
+      val fakeRequest = FakeRequest(POST, "/addBookForm").withFormUrlEncodedBody(
+        "_id" -> "1234",
+        "title" -> "Sample Title",
+        "subtitle" -> "Sample Subtitle",
+        "pageCount" -> "100"
+      ).withCSRFToken
+
+      val goodFormResult = TestAppControllerWithMockRepo.addBookForm().apply(fakeRequest)
+
+      status(goodFormResult) mustBe SEE_OTHER
+      redirectLocation(goodFormResult) mustBe Some(routes.ApplicationController.showBook(dataModel._id).url)
     }
   }
 

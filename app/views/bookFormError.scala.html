@@ -5,6 +5,9 @@
 
 @main("Add Book"){
 <div>
+
+    <div> <h1>Form Errors:</h1></div>
+    <div>
     @helper.form(action = routes.ApplicationController.addBookForm()) {
     @helper.CSRF.formField
     @helper.inputText(bookForm("_id"))
@@ -13,5 +16,6 @@
     @helper.inputText(bookForm("pageCount"))
     <input class="submitButton" type="submit" value="Submit">
     }
+    </div>
 </div>
 }
