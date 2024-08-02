@@ -30,3 +30,6 @@ GET     /api/display/:isbn                      controllers.ApplicationControlle
 
 # Part 6
 GET     /example                           controllers.ApplicationController.example()
+
+GET     /addbook/form     controllers.ApplicationController.addbook()
+POST     /addbook/form     controllers.ApplicationController.addbook()
