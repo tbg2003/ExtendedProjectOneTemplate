@@ -101,6 +101,10 @@ class ApplicationController @Inject()(
     Future.successful(Ok(views.html.example()))
   }
 
+  def addbook(): Action[AnyContent] = Action.async {implicit request =>
+    Future.successful()
+  }
+
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
