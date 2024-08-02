@@ -97,6 +97,10 @@ class ApplicationController @Inject()(
     }
   }
 
+  def example(): Action[AnyContent] = Action.async {implicit request =>
+    Future.successful(Ok(views.html.example()))
+  }
+
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
@@ -116,6 +120,7 @@ class ApplicationController @Inject()(
             repoService.read(isbn).flatMap {
               case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
               case Right(Some(data:DataModel)) => Future.successful(Ok(views.html.book(book)))
+              case Right(None) => Future.successful(NotFound(Json.toJson(s"No items found with isbn: $isbn")))
             }
 
         }

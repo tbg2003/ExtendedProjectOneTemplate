@@ -26,3 +26,7 @@ GET     /api/readName/:name                     controllers.ApplicationControlle
 PUT     /api/updateField/:id/:field/:value      controllers.ApplicationController.updateField(id: String, field:String, value:String)
 
 GET     /api/display/:isbn                      controllers.ApplicationController.displayBook(isbn: String)
+
+
+# Part 6
+GET     /example                           controllers.ApplicationController.example()
