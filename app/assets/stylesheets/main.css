@@ -18,15 +18,44 @@ body {
     padding: 20px;
 }
 
+/* Navigation bar styling */
+.navbar {
+    width: 100%;
+    background-color: #6b8e23; /* Olive green */
+    padding: 10px;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    margin-bottom: 20px;
+}
+
+.navbar .btn {
+    background-color: #8fbc8f; /* Dark sea green */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.navbar .btn:hover {
+    background-color: #6b8e23; /* Olive green on hover */
+}
+
 /* Container for page content */
 .container {
-    max-width: 1200px;
+    max-width: 800px;
     width: 100%;
     background-color: #fff; /* White background for content */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     border-radius: 8px; /* Rounded corners */
     padding: 20px;
     margin-top: 20px;
+    text-align: center; /* Center-align text */
 }
 
 /* Header styling */
@@ -82,7 +111,14 @@ a:hover {
 }
 
 /* Button styling */
-button {
+.btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between buttons */
+    margin-top: 20px;
+}
+
+.btn {
     background-color: #8fbc8f; /* Dark sea green */
     color: #fff;
     border: none;
@@ -91,9 +127,12 @@ button {
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
 }
 
-button:hover {
+.btn:hover {
     background-color: #6b8e23; /* Olive green on hover */
 }
 
