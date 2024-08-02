@@ -26,6 +26,8 @@ body {
     text-align: left;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
 }
 
 .navbar .btn {
@@ -40,9 +42,43 @@ body {
     text-align: center;
     text-decoration: none;
     display: inline-block;
+    margin-right: 20px; /* Space between home button and nav links */
 }
 
 .navbar .btn:hover {
+    background-color: #6b8e23; /* Olive green on hover */
+}
+
+/* Horizontal nav bar styling */
+.nav-bar-horizontal {
+    flex-grow: 1;
+}
+
+.nav-bar-horizontal ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.nav-bar-horizontal li {
+    margin-right: 20px; /* Space between nav items */
+}
+
+.nav-bar-horizontal a {
+    background-color: #8fbc8f; /* Dark sea green */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.nav-bar-horizontal a:hover {
     background-color: #6b8e23; /* Olive green on hover */
 }
 

@@ -17,6 +17,15 @@
 
     </head>
     <body>
+    <div class="navbar">
+        <button class="btn" onclick="location.href='@routes.HomeController.index()'">Back to Home</button>
+        <div class="nav-bar-horizontal">
+            <ul>
+                <li><a href="@routes.ApplicationController.searchISBN()" class="btn btn-primary">Find Google Book by ISBN</a></li>
+                <li><a href="@routes.ApplicationController.addBook()" class="btn btn-secondary">Add Book to Database</a></li>
+            </ul>
+        </div>
+    </div>
         @* And here's where we render the `Html` object containing
          * the page content. *@
         @content
