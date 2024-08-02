@@ -157,26 +157,22 @@ class ApplicationController @Inject()(
           subtitle = book.subtitle,
           pageCount = book.pageCount
         )
-        repoService.create(dataObj).flatMap {
-          case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
-          case Right(storedBookData: DataModel) =>
-            // if stored then print the book
-            repoService.read(dataObj._id).flatMap {
-              case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
-              case Right(Some(data)) => Future.successful(Ok(views.html.book(book)))
-              case Right(None) => Future.successful(Ok(views.html.error(NOT_FOUND)(s"No book found with ISBN: ${dataObj._id}")))
-            }
-
+        repoService.read(isbn).flatMap {
+          case Left(readError) =>
+            repoService.create(dataObj).flatMap {
+              case Left(writeError) => Future.successful(Ok(views.html.error(writeError.upstreamStatus)(writeError.upstreamMessage)))
+              case Right(_: DataModel) => Future.successful(Ok(views.html.book(book)))
+          }
+          case Right(Some(_:DataModel)) => Future.successful(Ok(views.html.book(book)))
+          case Right(None) => Future.successful(Ok(views.html.error(NOT_FOUND)(s"No book found with ISBN: ${dataObj._id}")))
         }
     }
-
   }
 
   def getGoogleBookForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     isbnForm.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(views.html.searchISBN(formWithErrors))),
       isbn => {
-        // Handle the logic to find the Google book by ISBN here
         Future.successful(Redirect(routes.ApplicationController.displayBookByISBN(isbn)))
       }
     )
