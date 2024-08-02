@@ -1,0 +1,14 @@
+@import services.Book
+
+@(book: Book)
+
+@main("Book Details") {
+<div class="container h-100 d-flex justify-content-center">
+    <div class="jumbotron my-auto">
+        <h1 class="display-3">@book.title</h1>
+        <h2 class="display-5">@book.subtitle</h2>
+        <p class="lead"><strong>ISBN:</strong> @book.isbn</p>
+        <p class="lead"><strong>Page Count:</strong> @book.pageCount</p>
+    </div>
+</div>
+}
