@@ -25,7 +25,7 @@ GET     /library/google/:search/:term      controllers.ApplicationController.get
 GET     /api/readName/:name                     controllers.ApplicationController.readByName(name: String)
 PUT     /api/updateField/:id/:field/:value      controllers.ApplicationController.updateField(id: String, field:String, value:String)
 
-GET     /api/display/:isbn                      controllers.ApplicationController.displayBook(isbn: String)
+GET     /api/display/:isbn                      controllers.ApplicationController.displayBookByISBN(isbn: String)
 
 
 # Part 6
@@ -36,3 +36,9 @@ GET     /addbook/form     controllers.ApplicationController.addBook()
 POST    /addbook/form     controllers.ApplicationController.addBookForm()
 
 GET     /showbook/:id            controllers.ApplicationController.showBook(id:String)
+
+
+# Find books by ISBN
+
+GET     /findBookByISBN             controllers.ApplicationController.searchISBN()
+POST    /findBookByISBN             controllers.ApplicationController.getGoogleBookForm()

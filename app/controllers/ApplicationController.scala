@@ -4,6 +4,8 @@ import com.mongodb.client.result.UpdateResult
 import repositories.DataRepository
 import models.{APIError, DataModel}
 import org.mongodb.scala.result
+import play.api.data.Forms._
+import play.api.data.Form
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
 import play.core.j.JavaAction
@@ -20,6 +22,12 @@ class ApplicationController @Inject()(
                                        val service: ApplicationService,
                                        val repoService: RepositoryService
                                      ) (implicit val ec: ExecutionContext)extends BaseController with play.api.i18n.I18nSupport{
+
+  val isbnForm: Form[String] = Form(
+    single(
+      "isbn" -> nonEmptyText
+    )
+  )
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
     repoService.index().map{
@@ -106,13 +114,11 @@ class ApplicationController @Inject()(
    Future.successful(Ok(views.html.addBook(DataModel.dataModelForm)))
   }
 
-
   def accessToken(implicit request: Request[_]) = {
     CSRF.getToken
   }
 
   def showBook(id: String): Action[AnyContent] = Action.async { implicit request =>
-    // Dummy implementation of fetching the book from the database
     repoService.read(id).map {
       case Left(error) => Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage))
       case Right(Some(data)) =>
@@ -139,9 +145,7 @@ class ApplicationController @Inject()(
     )
   }
 
-
-
-  def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>
+  def displayBookByISBN(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
       case Left(error) => Future.successful(Ok(views.html.error(error.httpResponseStatus)(error.reason)))
@@ -157,10 +161,10 @@ class ApplicationController @Inject()(
           case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
           case Right(storedBookData: DataModel) =>
             // if stored then print the book
-            repoService.read(isbn).flatMap {
+            repoService.read(dataObj._id).flatMap {
               case Left(error) => Future.successful(Ok(views.html.error(error.upstreamStatus)(error.upstreamMessage)))
               case Right(Some(data)) => Future.successful(Ok(views.html.book(book)))
-              case Right(None) => Future.successful(Ok(views.html.error(NOT_FOUND)(s"No book found with ISBN: $isbn")))
+              case Right(None) => Future.successful(Ok(views.html.error(NOT_FOUND)(s"No book found with ISBN: ${dataObj._id}")))
             }
 
         }
@@ -168,4 +172,17 @@ class ApplicationController @Inject()(
 
   }
 
+  def getGoogleBookForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    isbnForm.bindFromRequest().fold(
+      formWithErrors => Future.successful(BadRequest(views.html.searchISBN(formWithErrors))),
+      isbn => {
+        // Handle the logic to find the Google book by ISBN here
+        Future.successful(Redirect(routes.ApplicationController.displayBookByISBN(isbn)))
+      }
+    )
+  }
+
+  def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.searchISBN(isbnForm))
+  }
 }

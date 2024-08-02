@@ -1,0 +1,11 @@
+@(implicit request: RequestHeader)
+
+@main("Home Page") {
+<div class="container">
+    <h1>Welcome to the Book Management System</h1>
+    <div class="btn-group-vertical">
+        <a href="@routes.ApplicationController.searchISBN()" class="btn btn-primary">Find Google Book by ISBN</a>
+        <a href="@routes.ApplicationController.addBook()" class="btn btn-secondary">Add Book to Database</a>
+    </div>
+</div>
+}
