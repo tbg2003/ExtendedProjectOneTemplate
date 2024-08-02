@@ -8,6 +8,7 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
 import play.core.j.JavaAction
 import services.{ApplicationService, Book, RepositoryService}
+import views.html.helper.CSRF
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -101,8 +102,14 @@ class ApplicationController @Inject()(
     Future.successful(Ok(views.html.example()))
   }
 
-  def addbook(): Action[AnyContent] = Action.async {implicit request =>
-    Future.successful()
+  def addBook(): Action[AnyContent] = Action.async {implicit request =>
+   Future.successful(Ok(views.html.addBook(DataModel.dataModelForm)))
+  }
+
+  def addBookForm(): Action[AnyContent] = ???
+
+  def accessToken(implicit request: Request[_]) = {
+    CSRF.getToken
   }
 
   def displayBook(isbn: String): Action[AnyContent] = Action.async { implicit request =>

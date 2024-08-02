@@ -6,7 +6,7 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 
 # Part 2  -- set up endpoint for application controller
-GET     /api                        controllers.ApplicationController.index
+GET     /api                        controllers.ApplicationController.index()
 
 # Application resource routes
 
@@ -32,4 +32,5 @@ GET     /api/display/:isbn                      controllers.ApplicationControlle
 GET     /example                           controllers.ApplicationController.example()
 
 GET     /addbook/form     controllers.ApplicationController.addBook()
+
 POST     /addbook/form     controllers.ApplicationController.addBookForm()
