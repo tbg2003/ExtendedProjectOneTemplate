@@ -18,7 +18,7 @@ class ApplicationController @Inject()(
                                        val controllerComponents: ControllerComponents,
                                        val service: ApplicationService,
                                        val repoService: RepositoryService
-                                     ) (implicit val ec: ExecutionContext)extends BaseController{
+                                     ) (implicit val ec: ExecutionContext)extends BaseController with play.api.i18n.I18nSupport{
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
     repoService.index().map{
