@@ -17,15 +17,19 @@
 
     </head>
     <body>
-    <div class="navbar">
-        <button class="btn" onclick="location.href='@routes.HomeController.index()'">Back to Home</button>
-        <div class="nav-bar-horizontal">
-            <ul>
-                <li><a href="@routes.ApplicationController.searchISBN()" class="btn btn-primary">Find Google Book by ISBN</a></li>
-                <li><a href="@routes.ApplicationController.addBook()" class="btn btn-secondary">Add Book to Database</a></li>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="@routes.HomeController.index()">Book Management</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="@routes.ApplicationController.searchISBN()">Find Google Book by ISBN</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="@routes.ApplicationController.addBook()">Add Book to Database</a>
+                </li>
             </ul>
         </div>
-    </div>
+    </nav>
         @* And here's where we render the `Html` object containing
          * the page content. *@
         @content
