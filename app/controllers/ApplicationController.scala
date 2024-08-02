@@ -148,7 +148,7 @@ class ApplicationController @Inject()(
             // if stored then print the book
             repoService.read(isbn).flatMap {
               case Left(error) => Future(Status(error.upstreamStatus)(Json.toJson(error.upstreamMessage)))
-              case Right(Some(data:DataModel)) => Future.successful(Ok(views.html.book(book)))
+              case Right(Some(data)) => Future.successful(Ok(views.html.book(book)))
               case Right(None) => Future.successful(NotFound(Json.toJson(s"No items found with isbn: $isbn")))
             }
 
