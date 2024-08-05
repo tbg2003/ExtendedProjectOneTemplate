@@ -1,14 +1,11 @@
 package services
 
 import baseSpec.BaseSpec
-import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel}
-import org.bson.{BsonType, BsonValue}
-import org.mongodb.scala.bson.{BsonDocument, BsonValue}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import repositories.{DataRepository, MockRepository}
+import repositories.{MockRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -84,5 +81,4 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
       }
     }
   }
-
 }
