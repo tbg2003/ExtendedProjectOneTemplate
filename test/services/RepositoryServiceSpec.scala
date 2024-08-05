@@ -84,4 +84,5 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
       }
     }
   }
+
 }
