@@ -148,7 +148,7 @@ class ApplicationController @Inject()(
     accessToken //call the accessToken method
     DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
       formWithErrors => {
-        Future.successful(Ok(views.html.bookFormError(formWithErrors)))
+        Future.successful(Ok(views.html.addBook(formWithErrors)))
       },
       formData => {
         //here write how you would use this data to create a new book (DataModel)
