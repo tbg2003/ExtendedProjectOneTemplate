@@ -28,6 +28,12 @@ class ApplicationController @Inject()(
       "isbn" -> nonEmptyText
     )
   )
+  val titleForm: Form[String] = Form(
+    single(
+      "title" -> nonEmptyText
+    )
+  )
+
   def home(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
     Future.successful(Ok(views.html.index()))
@@ -180,18 +186,59 @@ class ApplicationController @Inject()(
     }
   }
 
-  def getGoogleBookForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def getISBNForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
     isbnForm.bindFromRequest().fold(
-      formWithErrors => Future.successful(BadRequest(views.html.form.searchISBN(formWithErrors))),
+      formWithErrors => Future.successful(BadRequest(views.html.googleBook.searchISBN(formWithErrors))),
       isbn => {
         Future.successful(Redirect(routes.ApplicationController.displayBookByISBN(isbn)))
       }
     )
   }
 
+  def displayClosestMatches(title: String, max:Int): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    service.getClosestMatches(search = "intitle", term = title, max).value.map {
+      case Right(books) => Ok(views.html.googleBook.foundBooks(books))
+      case Left(error) => BadRequest(views.html.display.error(error.httpResponseStatus)(error.reason))
+    }
+  }
+
+
+
+  def getTitleForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
+    titleForm.bindFromRequest().fold(
+      formWithErrors => Future.successful(BadRequest(views.html.googleBook.searchTitle(formWithErrors))),
+      title => {
+        Future.successful(Redirect(routes.ApplicationController.displayClosestMatches(title, 10)))
+      }
+    )
+  }
+
   def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.form.searchISBN(isbnForm))
+    Ok(views.html.googleBook.searchISBN(isbnForm))
+  }
+  def searchTitle(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.googleBook.searchTitle(titleForm))
+  }
+
+
+  def addGoogleBook(id: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    accessToken
+    request.body.validate[Seq[Book]] match {
+      case JsSuccess(books, _) =>
+        val bookToAdd = repoService.findBookById(books, id)
+        bookToAdd match {
+          case None => Future(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Add Book"))
+          case Some(book) =>
+            val bookData:DataModel = DataModel(book.isbn, book.title, book.subtitle, book.pageCount)
+            repoService.create(bookData).map {
+              case Right(createdDataModel) => Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book Added successfully")
+              case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
+            }
+        }
+      case JsError(error) => Future(Ok(views.html.display.error(error.hashCode())(error.toString())))
+    }
   }
 
   def listBooks(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>

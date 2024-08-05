@@ -1,0 +1,21 @@
+@(titleForm: Form[String])(implicit request: RequestHeader, messages: Messages)
+
+
+@main("Find Book by Title") {
+<div class="container">
+    <h1>Find Google Book by Title</h1>
+    @helper.form(action = routes.ApplicationController.getTitleForm()) {
+    @helper.CSRF.formField
+    <fieldset>
+        <legend>Book Information</legend>
+        <div class="form-group">
+            @helper.inputText(titleForm("title"), Symbol("_label") -> "Book with Title: ")
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <input type="submit" value="Submit" class="btn-submit">
+    </div>
+    }
+</div>
+}
+

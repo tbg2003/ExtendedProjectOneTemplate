@@ -1,0 +1,40 @@
+@import helper._
+@import services.Book
+
+@(books: Seq[Book])(implicit request: RequestHeader, messages: Messages)
+
+@main("Books Found") {
+<div class="container">
+    <h1>Books Found</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ISBN</th>
+            <th>Title</th>
+            <th>Subtitle</th>
+            <th>Page Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(book <- books) {
+        <tr>
+            <td>@book.isbn</td>
+            <td>@book.title</td>
+            <td>@book.subtitle</td>
+            <td>@book.pageCount</td>
+            <td class="td-btn-item">
+                @helper.form(action = routes.ApplicationController.addGoogleBook(book.isbn), Symbol("method") -> "POST") {
+                @helper.CSRF.formField
+                <input type="hidden" name="isbn" value="@book.isbn"/>
+                <input type="hidden" name="title" value="@book.title"/>
+                <input type="hidden" name="subtitle" value="@book.subtitle"/>
+                <input type="hidden" name="pageCount" value="@book.pageCount"/>
+                <button type="submit" class="btn btn-add">Add Book</button>
+                }
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+}

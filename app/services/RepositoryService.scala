@@ -82,5 +82,8 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
         else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
     }
   }
+  def findBookById(books: Seq[Book], id: String): Option[Book] = {
+    books.find(_.isbn == id)
+  }
 
 }
