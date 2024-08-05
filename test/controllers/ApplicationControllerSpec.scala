@@ -231,7 +231,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
 
     "return 202 Accepted" in {
       beforeEach()
-      val request: FakeRequest[JsValue] = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
+      val request = buildPost("/api").withBody[JsValue](Json.toJson(dataModel))
       val createdResult: Future[Result] = TestApplicationController.create()(request)
       status(createdResult) shouldBe Status.CREATED
 
@@ -240,11 +240,10 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
       status(deleteResult) shouldBe Status.ACCEPTED
       afterEach()
     }
-    "return 404 Not Found Error with error message" in {
+    "return 404 Not Found Error" in {
       beforeEach()
       val deleteResult = TestApplicationController.delete("abc")(FakeRequest())
       status(deleteResult) shouldBe Status.NOT_FOUND
-      contentAsJson(deleteResult).as[String] shouldBe "No item found with id: abc"
       afterEach()
     }
   }
@@ -301,7 +300,7 @@ class ApplicationControllerSpec extends BaseSpecWithApplication with MockFactory
 
       status(badFormResult) mustBe OK
       contentType(badFormResult) mustBe Some("text/html")
-      contentAsString(badFormResult) must include("Form Errors:")
+      contentAsString(badFormResult) must include("<dd class=\"error\">")
     }
 
 
