@@ -223,22 +223,27 @@ class ApplicationController @Inject()(
   }
 
 
-  def addGoogleBook(id: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    accessToken
-    request.body.validate[Seq[Book]] match {
-      case JsSuccess(books, _) =>
-        val bookToAdd = repoService.findBookById(books, id)
-        bookToAdd match {
-          case None => Future(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Add Book"))
-          case Some(book) =>
-            val bookData:DataModel = DataModel(book.isbn, book.title, book.subtitle, book.pageCount)
-            repoService.create(bookData).map {
-              case Right(createdDataModel) => Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book Added successfully")
-              case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
-            }
+  val bookForm: Form[Book] = Form(
+    mapping(
+      "isbn" -> nonEmptyText,
+      "title" -> nonEmptyText,
+      "subtitle" -> text,
+      "pageCount" -> number
+    )(Book.apply)(Book.unapply)
+  )
+
+  def addGoogleBook(id: String): Action[AnyContent] = Action.async { implicit request =>
+    bookForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future.successful(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Add Book"))
+      },
+      book => {
+        repoService.create(DataModel(book.isbn, book.title, book.subtitle, book.pageCount)).map {
+          case Right(createdDataModel) => Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book Added successfully")
+          case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
         }
-      case JsError(error) => Future(Ok(views.html.display.error(error.hashCode())(error.toString())))
-    }
+      }
+    )
   }
 
   def listBooks(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
