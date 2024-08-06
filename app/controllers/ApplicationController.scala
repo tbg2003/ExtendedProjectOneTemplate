@@ -186,7 +186,7 @@ class ApplicationController @Inject()(
     }
   }
 
-  def getISBNForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def getISBNForm: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
     isbnForm.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(views.html.googleBook.searchISBN(formWithErrors))),
@@ -198,14 +198,12 @@ class ApplicationController @Inject()(
 
   def displayClosestMatches(title: String, max:Int): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     service.getClosestMatches(search = "intitle", term = title, max).value.map {
-      case Right(books) => Ok(views.html.googleBook.foundBooks(books))
+      case Right(books) => Ok(views.html.googleBook.foundBooks(books)(title))
       case Left(error) => BadRequest(views.html.display.error(error.httpResponseStatus)(error.reason))
     }
   }
 
-
-
-  def getTitleForm(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def getTitleForm: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
     titleForm.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(views.html.googleBook.searchTitle(formWithErrors))),
@@ -218,10 +216,10 @@ class ApplicationController @Inject()(
   def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.googleBook.searchISBN(isbnForm))
   }
+
   def searchTitle(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.googleBook.searchTitle(titleForm))
   }
-
 
   val bookForm: Form[Book] = Form(
     mapping(
@@ -232,14 +230,14 @@ class ApplicationController @Inject()(
     )(Book.apply)(Book.unapply)
   )
 
-  def addGoogleBook(id: String): Action[AnyContent] = Action.async { implicit request =>
+  def addGoogleBook(search: String): Action[AnyContent] = Action.async { implicit request =>
     bookForm.bindFromRequest.fold(
       formWithErrors => {
-        Future.successful(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Add Book"))
+        Future.successful(Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("failure" -> "Failed to Add Book"))
       },
       book => {
         repoService.create(DataModel(book.isbn, book.title, book.subtitle, book.pageCount)).map {
-          case Right(createdDataModel) => Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book Added successfully")
+          case Right(createdDataModel) => Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("success" -> "Book Added successfully")
           case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
         }
       }

@@ -70,7 +70,7 @@ class DataRepository @Inject()(
     )
   private def byISBN(isbn:String):Bson =
     Filters.and(
-      Filters.equal("title", isbn)
+      Filters.equal("_id", isbn)
     )
 
   def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
