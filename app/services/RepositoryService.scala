@@ -1,7 +1,7 @@
 package services
 
 import com.mongodb.client.result.UpdateResult
-import models.{APIError, DataModel}
+import models.{APIError, DataModel, UpdateBook}
 import org.mongodb.scala.result
 import repositories.MockRepository
 
@@ -26,7 +26,6 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
     }
   }
 
-
   def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
     mockRepository.readByName(name).map{
       case Left(error) => Left(error)
@@ -45,7 +44,6 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
     }
   }
 
-
   def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] = {
     mockRepository.read(id).map{
       case Left(error) => Left(error)
@@ -55,17 +53,15 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
     }
   }
 
-
   def update(id: String, book: DataModel)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
     mockRepository.update(id, book).map {
       case Left(error) => Left(error)
       case Right(result: UpdateResult) =>
-        if( result.wasAcknowledged()) Right(result)
+        if(result.wasAcknowledged()) Right(result)
         else Left(APIError.BadAPIResponse(404, s"$result Not Found"))
       case Right(_) => Left(APIError.BadAPIResponse(500, "unexpected error occurred"))
       }
     }
-
 
   def delete(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.DeleteResult]] = {
     mockRepository.delete(id).map {
@@ -75,13 +71,27 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
   }
 
   def updateField(id: String, field: String, value:String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
-    mockRepository.updateField(id, field, value).map {
+    val cleanField:String = field.strip().toLowerCase
+    val cleanValue:String = value.strip().toLowerCase
+    mockRepository.updateField(id, cleanField, cleanValue).map {
       case Left(error) => Left(error)
       case Right(result) =>
         if (result.getMatchedCount > 0) Right(result)
         else Left(APIError.BadAPIResponse(404, s"No item found with id: $id"))
     }
   }
+
+  def makeUpdates(book: DataModel, updates: UpdateBook)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] = {
+    val updatedBook = DataModel(
+      _id = book._id,
+      title = updates.title.getOrElse(book.title),
+      subtitle = updates.subtitle.getOrElse(book.subtitle),
+      pageCount = updates.pageCount.getOrElse(book.pageCount)
+    )
+    mockRepository.update(book._id, updatedBook)
+  }
+
+
   def findBookById(books: Seq[Book], id: String): Option[Book] = {
     books.find(_.isbn == id)
   }

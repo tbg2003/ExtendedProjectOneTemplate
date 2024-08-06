@@ -1,0 +1,31 @@
+@import models.DataModel
+@import services.Book
+@import helper._
+
+
+@(updateForm: Form[UpdateBook])(book:Book)(implicit request: RequestHeader, messages: Messages)
+
+@main("Update Book"){
+<div class="container">
+    <h1>Update Book: </h1>
+    @helper.form(action = routes.ApplicationController.getUpdateForm(book.isbn)) {
+    @helper.CSRF.formField
+    <fieldset>
+        <legend>Enter New Book Values</legend>
+        <h3>Making changes to book:  @book.isbn</h3>
+        <div class="form-group">
+            @helper.inputText(updateForm("title"), Symbol("_label") -> "Book Title", Symbol("placeholder") -> book.title)
+        </div>
+        <div class="form-group">
+            @helper.inputText(updateForm("subtitle"), Symbol("_label") -> "Book Subtitle", Symbol("placeholder") -> book.subtitle)
+        </div>
+        <div class="form-group">
+            @helper.inputText(updateForm("pageCount"), Symbol("_label") -> "Book Page Count", Symbol("placeholder") -> book.pageCount)
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <input type="submit" value="Submit" class="btn-submit">
+    </div>
+    }
+</div>
+}

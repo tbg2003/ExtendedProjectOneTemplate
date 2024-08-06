@@ -26,7 +26,17 @@
                 @helper.form(action = routes.ApplicationController.deleteBook(book._id),  Symbol("method") -> "POST") {
                 @helper.CSRF.formField
                 <input type="hidden" name="_method" value="DELETE"/>
-                <button type="submit" class="btn btn-delete" onclick="return confirm('Are you sure?');"> Delete </button>
+                <button type="submit" class="btn btn-delete" onclick="confirm('Are you sure?')"> Delete </button>
+                }
+            </td>
+            <td class="td-btn-item">
+                @helper.form(action = routes.ApplicationController.getBookUpdate()) {
+                @helper.CSRF.formField
+                <input type="hidden" name="isbn" value="@book._id"/>
+                <input type="hidden" name="title" value="@book.title"/>
+                <input type="hidden" name="subtitle" value="@book.subtitle"/>
+                <input type="hidden" name="pageCount" value="@book.pageCount"/>
+                <button type="submit" class="btn btn-edit"> Edit </button>
                 }
             </td>
         </tr>

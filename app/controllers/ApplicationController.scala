@@ -1,14 +1,12 @@
 package controllers
 
 import com.mongodb.client.result.UpdateResult
-import repositories.DataRepository
-import models.{APIError, DataModel}
+import models.{APIError, DataModel, UpdateBook}
 import org.mongodb.scala.result
 import play.api.data.Forms._
 import play.api.data.Form
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
-import play.core.j.JavaAction
 import services.{ApplicationService, Book, RepositoryService}
 import views.html.helper.CSRF
 
@@ -82,9 +80,7 @@ class ApplicationController @Inject()(
   }
 
   def updateField(id:String, field:String, value:String): Action[JsValue] = Action.async(parse.json){implicit request =>
-    val cleanField:String = field.strip().toLowerCase
-    val cleanValue:String = value.strip().toLowerCase
-    repoService.updateField(id, cleanField, cleanValue).map {
+    repoService.updateField(id, field, value).map {
       case Right(result: UpdateResult) =>
         if( result.wasAcknowledged()) Accepted
         else NotFound(Json.obj("message" -> s"No item found with id: $id"))
@@ -231,7 +227,7 @@ class ApplicationController @Inject()(
   }
 
   def addGoogleBook(search: String): Action[AnyContent] = Action.async { implicit request =>
-    bookForm.bindFromRequest.fold(
+    bookForm.bindFromRequest().fold(
       formWithErrors => {
         Future.successful(Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("failure" -> "Failed to Add Book"))
       },
@@ -249,6 +245,43 @@ class ApplicationController @Inject()(
     repoService.index().map {
       case Right(books: Seq[DataModel]) => Ok(views.html.interactive.listBooks(books))
       case Left(error) => Status(error.upstreamStatus)(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
+    }
+  }
+
+  def getBookUpdate: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    bookForm.bindFromRequest().fold(
+      formWithErrors => {
+        Future.successful(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Edit Book"))
+      },
+      book => {
+        Future.successful(Ok(views.html.form.updateForm(UpdateBook.dataModelForm)(book)))
+      }
+    )
+
+  }
+
+  def getUpdateForm(isbn: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    repoService.readByISBN(isbn).flatMap {
+      case Left(error) =>
+        Future.successful(Ok(views.html.display.error(error.httpResponseStatus)(error.reason)))
+      case Right(Some(bookData)) =>
+        UpdateBook.dataModelForm.bindFromRequest().fold(
+          formWithErrors => {
+            val book = Book(bookData._id, bookData.title, bookData.subtitle, bookData.pageCount)
+            Future.successful(BadRequest(views.html.form.updateForm(formWithErrors)(book)))
+          },
+          updates => {
+            repoService.makeUpdates(bookData, updates).map {
+              case Left(updateError) =>
+                Ok(views.html.display.error(updateError.httpResponseStatus)(updateError.reason))
+              case Right(_) =>
+                Redirect(routes.ApplicationController.listBooks())
+                  .flashing("Success" -> "Successfully Edited Book")
+            }
+          }
+        )
+      case Right(None) =>
+        Future.successful(NotFound(views.html.display.error(NOT_FOUND)(s"No item found with id: $isbn")))
     }
   }
 }

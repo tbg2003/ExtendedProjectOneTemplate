@@ -53,7 +53,6 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
     }
   }
 
-
   "create" should {
     "return a Right" when {
       "dataRepository .create returns a Right" in {

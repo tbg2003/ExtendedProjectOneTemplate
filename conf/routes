@@ -53,3 +53,9 @@ GET /googlebook/find/title              controllers.ApplicationController.search
 POST /googlebook/form                   controllers.ApplicationController.getTitleForm()
 POST /googlebook/add/:id                    controllers.ApplicationController.addGoogleBook(id:String)
 GET /googlebook/display/matches/title/:title/:max   controllers.ApplicationController.displayClosestMatches(title: String, max:Int)
+
+GET     /books/update/                                controllers.ApplicationController.getBookUpdate()
+POST    /books/update/form/:isbn                            controllers.ApplicationController.getUpdateForm(isbn:String)
+
+
+
