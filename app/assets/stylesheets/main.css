@@ -8,7 +8,7 @@
 
 /* Body styling */
 body {
-    color: #333; /* Dark grey for text */
+    color: #333;
     line-height: 1.6;
     font-size: 16px;
     display: flex;
@@ -29,7 +29,7 @@ body {
     margin-bottom: 0px;
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Align items to the bottom */
+    align-items: center;
     background-color: #decca9;
 }
 
@@ -47,7 +47,7 @@ body {
 .navbar-nav-wrapper {
     display: flex;
     flex-grow: 1;
-    justify-content: center; /* Centering the nav items */
+    justify-content: center;
 }
 
 .navbar .navbar-nav {
@@ -58,7 +58,7 @@ body {
 }
 
 .navbar .nav-item {
-    margin-right: 20px; /* Space between nav items */
+    margin-right: 20px;
 }
 
 .navbar .nav-link {
@@ -68,11 +68,11 @@ body {
     margin-right: 20px;
     text-decoration: none;
     transition: color 0.3s;
-    padding-bottom: 10px; /* Align with navbar-brand */
+    padding-bottom: 10px;
 }
 
 .nav-link:hover {
-    color: #244715; /* Darker color on hover */
+    color: #244715;
 }
 
 .nav-link::after {
@@ -93,22 +93,21 @@ body {
 .container {
     max-width: 800px;
     width: 100%;
-    background-color: #fff; /* White background for content */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    border-radius: 8px; /* Rounded corners */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     padding: 20px;
     margin-top: 20px;
-    text-align: center; /* Center-align text */
+    text-align: center;
 }
 
 .form-container {
     background-color: #fff;
 }
 
-/* Header styling */
 header {
     width: 100%;
-    background-color: #6b8e23; /* Olive green */
+    background-color: #616E54;
     padding: 20px 0;
     text-align: center;
     color: #fff;
@@ -123,13 +122,13 @@ header p {
     font-size: 1.2em;
 }
 
-/* Main content styling */
+
 main {
     padding: 20px;
 }
 
 h2, h3, h4 {
-    color: #6b8e23; /* Olive green for headings */
+    color: #616E54;
     margin-bottom: 10px;
 }
 
@@ -140,7 +139,7 @@ p {
 /* Footer styling */
 footer {
     width: 100%;
-    background-color: #6b8e23; /* Olive green */
+    background-color: #616E54;
     padding: 10px 0;
     text-align: center;
     color: #fff;
@@ -149,7 +148,7 @@ footer {
 }
 
 a {
-    color: #468966; /* Darker green for links */
+    color: #468966;
     text-decoration: none;
 }
 
@@ -161,12 +160,12 @@ a:hover {
 .btn-group {
     display: flex;
     justify-content: center;
-    gap: 20px; /* Space between buttons */
+    gap: 20px;
     margin-top: 20px;
 }
 
 .btn {
-    background-color: #8fbc8f; /* Dark sea green */
+    background-color: #8fbc8f;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -180,11 +179,11 @@ a:hover {
 }
 
 .btn:hover {
-    background-color: #6b8e23; /* Olive green on hover */
+    background-color: #616E54;
 }
 
 .btn-delete {
-    background-color: #e74c3c; /* Red */
+    background-color: #e74c3c;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -198,7 +197,7 @@ a:hover {
 }
 
 .btn-delete:hover {
-    background-color: #c0392b; /* Darker red on hover */
+    background-color: #c0392b;
 }
 
 /* Form group styling */
@@ -212,7 +211,7 @@ a:hover {
     display: block;
     font-size: 1em;
     margin-bottom: 5px;
-    color: #555; /* Lighter grey for labels */
+    color: #555;
 }
 
 /* Input styling */
@@ -225,12 +224,12 @@ a:hover {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 1em;
-    background-color: #f9f9f9; /* Light grey background for inputs */
+    background-color: #f9f9f9;
 }
 
 /* Specific styling for the submit button */
 .form-group input[type="submit"] {
-    background-color: #8fbc8f; /* Dark sea green */
+    background-color: #8fbc8f;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -238,13 +237,13 @@ a:hover {
 }
 
 .form-group input[type="submit"]:hover {
-    background-color: #6b8e23; /* Olive green on hover */
+    background-color: #616E54;
 }
 
 /* Input focus styling */
 .form-group input[type="text"]:focus,
 .form-group input[type="number"]:focus {
-    border-color: #6b8e23; /* Olive green border on focus */
+    border-color: #616E54;
     outline: none;
 }
 
@@ -260,12 +259,12 @@ fieldset {
 legend {
     font-size: 1.2em;
     padding: 0 10px;
-    color: #333; /* Dark grey for text */
+    color: #333;
 }
 
 dl.error dd.error {
-    color: #e74c3c; /* Red for error messages */
-    font-size: 1.1em; /* Larger font size for errors */
+    color: #e74c3c;
+    font-size: 1.1em;
     margin-top: 5px;
 }
 
@@ -274,9 +273,6 @@ dd.info {
     font-size: 0.9em;
     margin-top: 2px;
 }
-
-/* Table styling */
-
 
 /* Table styling */
 table {
@@ -301,7 +297,7 @@ th, td {
 
 
 th {
-    background-color: #6b8e23; /* Olive green for table header */
+    background-color: #6b8e23;
     color: #fff;
 }
 
