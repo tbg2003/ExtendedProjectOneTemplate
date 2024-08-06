@@ -33,6 +33,14 @@ class ApplicationController @Inject()(
       "title" -> nonEmptyText
     )
   )
+  val bookForm: Form[Book] = Form(
+    mapping(
+      "isbn" -> nonEmptyText,
+      "title" -> nonEmptyText,
+      "subtitle" -> text,
+      "pageCount" -> number
+    )(Book.apply)(Book.unapply)
+  )
 
   def home(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
@@ -108,6 +116,7 @@ class ApplicationController @Inject()(
       case Left(error) => Status(error.upstreamStatus)(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
     }
   }
+
   def deleteBook(id: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
     repoService.delete(id).map {
@@ -220,15 +229,6 @@ class ApplicationController @Inject()(
   def searchTitle(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.googleBook.searchTitle(titleForm))
   }
-
-  val bookForm: Form[Book] = Form(
-    mapping(
-      "isbn" -> nonEmptyText,
-      "title" -> nonEmptyText,
-      "subtitle" -> text,
-      "pageCount" -> number
-    )(Book.apply)(Book.unapply)
-  )
 
   def addGoogleBook(search: String): Action[AnyContent] = Action.async { implicit request =>
     bookForm.bindFromRequest.fold(
