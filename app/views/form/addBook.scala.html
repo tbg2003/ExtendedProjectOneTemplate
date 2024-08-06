@@ -1,0 +1,32 @@
+@import models.DataModel
+@import helper._
+
+
+@(bookForm: Form[DataModel])(implicit request: RequestHeader, messages: Messages)
+
+@main("Add Book"){
+<div class="container">
+    <h1>Create New Book</h1>
+    @helper.form(action = routes.ApplicationController.addBookForm()) {
+    @helper.CSRF.formField
+    <fieldset>
+        <legend>Book Information</legend>
+        <div class="form-group">
+            @helper.inputText(bookForm("_id"), Symbol("_label") -> "Book ISBN")
+        </div>
+        <div class="form-group">
+            @helper.inputText(bookForm("title"), Symbol("_label") -> "Book Title")
+        </div>
+        <div class="form-group">
+            @helper.inputText(bookForm("subtitle"), Symbol("_label") -> "Book Subtitle")
+        </div>
+        <div class="form-group">
+            @helper.inputText(bookForm("pageCount"), Symbol("_label") -> "Book Page Count")
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <input type="submit" value="Submit" class="btn-submit">
+    </div>
+    }
+</div>
+}

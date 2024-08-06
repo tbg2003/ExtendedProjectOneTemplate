@@ -1,12 +1,13 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index()
 
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 
 # Part 2  -- set up endpoint for application controller
-GET     /api                        controllers.ApplicationController.index
+GET     /api                        controllers.ApplicationController.index()
 
 # Application resource routes
 
@@ -25,8 +26,36 @@ GET     /library/google/:search/:term      controllers.ApplicationController.get
 GET     /api/readName/:name                     controllers.ApplicationController.readByName(name: String)
 PUT     /api/updateField/:id/:field/:value      controllers.ApplicationController.updateField(id: String, field:String, value:String)
 
-GET     /api/display/:isbn                      controllers.ApplicationController.displayBook(isbn: String)
+GET     /api/display/:isbn                      controllers.ApplicationController.displayBookByISBN(isbn: String)
 
 
 # Part 6
-GET     /example                           controllers.ApplicationController.example()
+
+
+GET     /addbook/form     controllers.ApplicationController.addBook()
+
+POST    /addbook/form     controllers.ApplicationController.addBookForm()
+
+GET     /showbook/:id            controllers.ApplicationController.showBook(id:String)
+
+
+# Find books by ISBN
+
+GET     /findBookByISBN             controllers.ApplicationController.searchISBN()
+POST    /findBookByISBN             controllers.ApplicationController.getISBNForm()
+
+# List all books in database
+GET     /books                          controllers.ApplicationController.listBooks()
+POST    /books/:id                        controllers.ApplicationController.deleteBook(id:String)
+
+
+GET /googlebook/find/title              controllers.ApplicationController.searchTitle()
+POST /googlebook/form                   controllers.ApplicationController.getTitleForm()
+POST /googlebook/add/:id                    controllers.ApplicationController.addGoogleBook(id:String)
+GET /googlebook/display/matches/title/:title/:max   controllers.ApplicationController.displayClosestMatches(title: String, max:Int)
+
+GET     /books/update/                                controllers.ApplicationController.getBookUpdate()
+POST    /books/update/form/:isbn                            controllers.ApplicationController.getUpdateForm(isbn:String)
+
+
+

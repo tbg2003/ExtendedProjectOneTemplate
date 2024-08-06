@@ -1,6 +1,6 @@
 @import services.Book
 
-@(book: Book)
+@(book: Book)(implicit request: RequestHeader)
 
 @main("Book Details") {
 <div class="container h-100 d-flex justify-content-center">

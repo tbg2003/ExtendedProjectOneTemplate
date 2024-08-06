@@ -1,0 +1,15 @@
+
+
+@(errorCode: Int)(errorMessage: String)(implicit request: RequestHeader)
+
+
+@main("Error Occurred") {
+
+<div class="container h-100 d-flex justify-content-center">
+    <div class="jumbotron my-auto">
+        <h1 class="display-3">ERROR : @errorCode</h1>
+        <h2 class="display-5">@errorMessage</h2>
+    </div>
+</div>
+}
+

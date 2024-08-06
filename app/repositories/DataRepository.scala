@@ -70,25 +70,25 @@ class DataRepository @Inject()(
     )
   private def byISBN(isbn:String):Bson =
     Filters.and(
-      Filters.equal("title", isbn)
+      Filters.equal("_id", isbn)
     )
 
   def readByName(name: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
-    collection.find(byName(name)).headOption.map { data =>
+    collection.find(byName(name)).headOption().map { data =>
       Right(data)
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
   def readByISBN(isbn: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
-    collection.find(byISBN(isbn)).headOption.map { data =>
+    collection.find(byISBN(isbn)).headOption().map { data =>
       Right(data)
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
   def read(id: String)(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Option[DataModel]]] =
-    collection.find(byID(id)).headOption.map { data =>
+    collection.find(byID(id)).headOption().map { data =>
       Right(data)
     }.recover {
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))

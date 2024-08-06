@@ -1,0 +1,21 @@
+@(isbnForm: Form[String])(implicit request: RequestHeader, messages: Messages)
+
+
+@main("Find Book by ISBN") {
+<div class="container">
+    <h1>Find Google Book by ISBN</h1>
+    @helper.form(action = routes.ApplicationController.getISBNForm()) {
+    @helper.CSRF.formField
+    <fieldset>
+        <legend>Book Information</legend>
+        <div class="form-group">
+            @helper.inputText(isbnForm("isbn"), Symbol("_label") -> "Book ISBN")
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <input type="submit" value="Submit" class="btn-submit">
+    </div>
+    }
+</div>
+}
+
