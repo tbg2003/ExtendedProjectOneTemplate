@@ -24,18 +24,15 @@ class ApplicationService @Inject()(connector: LibraryConnector) {
             subtitle = googleBook.volumeInfo.subtitle.getOrElse(""),
             pageCount = googleBook.volumeInfo.pageCount.getOrElse(0)
           )
-        case None => throw new RuntimeException("No book found with the provided ISBN")
       }
     }
   }
-
 
   def findIsbn(identifiers: Seq[IndustryIdentifier]): String = {
     identifiers.find(_.`type` == "ISBN_13").map(_.identifier)
       .orElse(identifiers.find(_.`type` == "ISBN_10").map(_.identifier))
       .getOrElse(identifiers.headOption.map(_.identifier).getOrElse(""))
   }
-
 
   def getClosestMatches(search: String, term: String, maxResults:Int)(implicit ec: ExecutionContext): EitherT[Future, APIError, Seq[Book]]  = {
     val formattedTerm = term.split("\\s+").map(_.trim).mkString("+")

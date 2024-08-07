@@ -156,7 +156,7 @@ class ApplicationController @Inject()(
 
 
   // CSRF Token
-  def accessToken(implicit request: Request[_]) = {
+  private def accessToken(implicit request: Request[_]) = {
     CSRF.getToken
   }
 
@@ -192,7 +192,7 @@ class ApplicationController @Inject()(
     )
   }
 
-  def addBookForm(): Action[AnyContent] =  Action.async {implicit request =>
+  def addBookForm(): Action[AnyContent] =  Action.async { implicit request =>
     accessToken //call the accessToken method
     DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
       formWithErrors => {
@@ -210,12 +210,12 @@ class ApplicationController @Inject()(
 
   def addGoogleBook(search: String): Action[AnyContent] = Action.async { implicit request =>
     bookForm.bindFromRequest().fold(
-      formWithErrors => {
+      _ => {
         Future.successful(Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("failure" -> "Failed to Add Book"))
       },
       book => {
         repoService.create(DataModel(book.isbn, book.title, book.subtitle, book.pageCount)).map {
-          case Right(createdDataModel) => Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("success" -> "Book Added successfully")
+          case Right(_) => Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("success" -> "Book Added successfully")
           case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
         }
       }
@@ -224,7 +224,7 @@ class ApplicationController @Inject()(
 
   def getBookUpdate: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     bookForm.bindFromRequest().fold(
-      formWithErrors => {
+      _ => {
         Future.successful(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Edit Book"))
       },
       book => {
@@ -272,6 +272,7 @@ class ApplicationController @Inject()(
     }
   }
 
+  // TODO break down this method, wayyy to chunky
   def displayBookByISBN(isbn: String): Action[AnyContent] = Action.async { implicit request =>
     // get book from google by isbn
     service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
@@ -285,7 +286,7 @@ class ApplicationController @Inject()(
           pageCount = book.pageCount
         )
         repoService.read(isbn).flatMap {
-          case Left(readError) =>
+          case Left(_) =>
             repoService.create(dataObj).flatMap {
               case Left(writeError) => Future.successful(Ok(views.html.display.error(writeError.upstreamStatus)(writeError.upstreamMessage)))
               case Right(_: DataModel) => Future.successful(Ok(views.html.display.book(book)))

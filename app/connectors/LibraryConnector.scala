@@ -22,7 +22,7 @@ class LibraryConnector @Inject()(ws: WSClient) {
           Left(APIError.BadAPIResponse(result.status, result.statusText))
         }
       }.recover { case ex: Throwable =>
-        Left(APIError.BadAPIResponse(500, "Could not connect"))
+        Left(APIError.BadAPIResponse(500, "No Response from Google Books API"))
       }
     }
   }
