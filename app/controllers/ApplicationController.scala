@@ -41,11 +41,6 @@ class ApplicationController @Inject()(
     )(Book.apply)(Book.unapply)
   )
 
-  def home(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    accessToken
-    Future.successful(Ok(views.html.index()))
-  }
-
   def index(): Action[AnyContent] = Action.async { implicit request =>
     repoService.index().map{
       case Right(item: Seq[DataModel]) => Ok {Json.toJson(item)}
@@ -125,7 +120,13 @@ class ApplicationController @Inject()(
   /** ---- USED IN FRONTEND ---- */
 
 
-  // Display View Templates
+  // Display View Pages
+
+  def login(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
+    Future.successful(Ok(views.html.display.login()))
+  }
+
   def showBook(id: String): Action[AnyContent] = Action.async { implicit request =>
     repoService.read(id).map {
       case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
@@ -153,6 +154,11 @@ class ApplicationController @Inject()(
 
   def addBook(): Action[AnyContent] = Action.async {implicit request =>
     Future.successful(Ok(views.html.form.addBook(DataModel.dataModelForm)))
+  }
+
+  def home(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
+    Future.successful(Ok(views.html.index()))
   }
 
 
