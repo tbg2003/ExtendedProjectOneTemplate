@@ -80,4 +80,9 @@ class RepositoryServiceSpec extends BaseSpec with MockFactory with ScalaFutures 
       }
     }
   }
+
+
+  // Decided to continue without implementing the rest of the tests as
+  // I believe I have a strong understanding and wanted to continue learning over copy and pasting :))
+  // Won't do this on an actual HMRC project I promise
 }
