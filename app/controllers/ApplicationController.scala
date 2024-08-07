@@ -2,12 +2,13 @@ package controllers
 
 import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel, UpdateBook}
+import models.GoogleBook._
 import org.mongodb.scala.result
 import play.api.data.Forms._
 import play.api.data.Form
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
-import services.{ApplicationService, Book, RepositoryService}
+import services.{ApplicationService, RepositoryService}
 import views.html.helper.CSRF
 
 import javax.inject.{Inject, Singleton}

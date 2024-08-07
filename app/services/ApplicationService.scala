@@ -2,10 +2,10 @@ package services
 
 import cats.data.EitherT
 import connectors.LibraryConnector
-import models.{APIError, DataModel}
+import models.APIError
+import models.GoogleBook._
 
 import javax.inject.Inject
-import scala.concurrent.impl.Promise
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationService @Inject()(connector: LibraryConnector) {
@@ -24,6 +24,7 @@ class ApplicationService @Inject()(connector: LibraryConnector) {
             subtitle = googleBook.volumeInfo.subtitle.getOrElse(""),
             pageCount = googleBook.volumeInfo.pageCount.getOrElse(0)
           )
+        case _ => throw new Exception("Something went wrong")
       }
     }
   }
