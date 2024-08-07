@@ -242,6 +242,15 @@ class ApplicationController @Inject()(
 
   }
 
+  def authenticate(): Action[AnyContent] =  Action.async { implicit request =>
+    accessToken
+    Login.loginForm.bindFromRequest().fold(
+      hasErrors => Future.successful(BadRequest(views.html.form.login(hasErrors))),
+      credentials => Future.successful(Redirect(routes.HomeController.index()))
+    )
+
+
+  }
 
   // Complete Operation then Redirect methods
 

@@ -36,7 +36,7 @@ class DataRepository @Inject()(
   indexes = Seq(IndexModel(
     Indexes.ascending("_id")
   )),
-  replaceIndexes = false
+  replaceIndexes = true
 ) with MockRepository{
 
   def index()(implicit ec: ExecutionContext): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]  = {
@@ -140,5 +140,5 @@ class DataRepository @Inject()(
     }
   }
 
-  def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for testst: needed for tests
+  def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint:needed for tests
 }

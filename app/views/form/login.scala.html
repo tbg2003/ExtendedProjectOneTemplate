@@ -4,7 +4,7 @@
 
 @main("Login") {
 <div class="container">
-    @helper.form(action = routes.HomeController.index()) {
+    @helper.form(action = routes.ApplicationController.authenticate()) {
     @helper.CSRF.formField
     <fieldset>
         <legend>Login</legend>

@@ -60,3 +60,4 @@ POST    /books/update/form/:isbn                            controllers.Applicat
 
 # LOGIN
 GET     /login                  controllers.ApplicationController.login()
+POST    /login                   controllers.ApplicationController.authenticate()
