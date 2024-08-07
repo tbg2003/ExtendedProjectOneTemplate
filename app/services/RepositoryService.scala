@@ -90,9 +90,4 @@ class RepositoryService @Inject()(mockRepository: MockRepository){
     )
     mockRepository.update(book._id, updatedBook)
   }
-
-
-  def findBookById(books: Seq[Book], id: String): Option[Book] = {
-    books.find(_.isbn == id)
-  }
 }

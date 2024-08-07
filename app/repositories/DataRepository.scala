@@ -68,6 +68,7 @@ class DataRepository @Inject()(
     Filters.and(
       Filters.equal("title", name)
     )
+
   private def byISBN(isbn:String):Bson =
     Filters.and(
       Filters.equal("_id", isbn)
@@ -111,7 +112,7 @@ class DataRepository @Inject()(
       case ex: Exception => Left(APIError.BadAPIResponse(500, s"An error occurred: ${ex.getMessage}"))
     }
 
-
+  // helper for update field
   private def getUpdateOperation(field:String, value:String)(implicit ec: ExecutionContext):Either[APIError.BadAPIResponse, Bson] = {
     field match {
       case "title" => Right(set("title", value))

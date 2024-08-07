@@ -10,6 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ApplicationService @Inject()(connector: LibraryConnector) {
 
+
   def getGoogleBook(urlOverride: Option[String] = None, search: String, term: String)(implicit ec: ExecutionContext): EitherT[Future, APIError, Book] = {
     val url = urlOverride.getOrElse(s"https://www.googleapis.com/books/v1/volumes?q=$search:$term")
     val result = connector.get[GoogleBooksResponse](url)
@@ -27,11 +28,14 @@ class ApplicationService @Inject()(connector: LibraryConnector) {
       }
     }
   }
+
+
   def findIsbn(identifiers: Seq[IndustryIdentifier]): String = {
     identifiers.find(_.`type` == "ISBN_13").map(_.identifier)
       .orElse(identifiers.find(_.`type` == "ISBN_10").map(_.identifier))
       .getOrElse(identifiers.headOption.map(_.identifier).getOrElse(""))
   }
+
 
   def getClosestMatches(search: String, term: String, maxResults:Int)(implicit ec: ExecutionContext): EitherT[Future, APIError, Seq[Book]]  = {
     val formattedTerm = term.split("\\s+").map(_.trim).mkString("+")
