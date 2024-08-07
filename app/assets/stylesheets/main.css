@@ -233,7 +233,6 @@ a:hover {
     color: #555;
 }
 
-/* Input styling */
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="submit"] {
@@ -246,7 +245,6 @@ a:hover {
     background-color: #f9f9f9;
 }
 
-/* Specific styling for the submit button */
 .form-group input[type="submit"] {
     background-color: #8fbc8f;
     color: #fff;
@@ -259,11 +257,21 @@ a:hover {
     background-color: #616E54;
 }
 
-/* Input focus styling */
 .form-group input[type="text"]:focus,
 .form-group input[type="number"]:focus {
     border-color: #616E54;
     outline: none;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"]{
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0 2px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    background-color: #f9f9f9;
 }
 
 /* Fieldset styling for better grouping */
@@ -284,13 +292,13 @@ legend {
 dl.error dd.error {
     color: #e74c3c;
     font-size: 1.1em;
-    margin-top: 5px;
+    margin-top: 1px;
 }
 
 dd.info {
-    color: #a3c9a1;
+    color: #996409;
     font-size: 0.9em;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 /* Table styling */

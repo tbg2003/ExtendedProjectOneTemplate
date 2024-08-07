@@ -1,0 +1,23 @@
+@import models.Login
+@import helper._
+@(loginForm: Form[Login])(implicit request: RequestHeader, messages: Messages)
+
+@main("Login") {
+<div class="container">
+    @helper.form(action = routes.HomeController.index()) {
+    @helper.CSRF.formField
+    <fieldset>
+        <legend>Login</legend>
+        <div class="form-group form-userName">
+            @helper.inputText(loginForm("userName"), Symbol("_label") -> "User Name", Symbol("placeholder") -> "user.email@example.com", Symbol("_showConstraints")->false)
+        </div>
+        <div class="form-group form-password">
+            @helper.inputPassword(loginForm("password"), Symbol("_label") -> "Password", Symbol("placeholder") -> "password", Symbol("_showConstraints")->false)
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <input type="submit" value="Submit" class="btn-submit">
+    </div>
+    }
+</div>
+}

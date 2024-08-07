@@ -1,8 +1,7 @@
 package models
 
 import play.api.data.Form
-import play.api.data.Forms.{email, mapping, nonEmptyText, number, optional, text}
-import play.api.data.validation.Constraints
+import play.api.data.Forms.{email, mapping, nonEmptyText}
 import play.api.libs.json.{Json, OFormat}
 
 case class Login(
@@ -12,8 +11,7 @@ case class Login(
 object Login{
   implicit val formats: OFormat[Login] = Json.format[Login]
 
-  // Form mapping to handle optional fields
-  val dataModelForm: Form[Login] = Form {
+  val loginForm: Form[Login] = Form {
     mapping(
       "userName" -> email,
       "password" -> nonEmptyText,

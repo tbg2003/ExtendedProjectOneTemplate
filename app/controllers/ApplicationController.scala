@@ -2,6 +2,7 @@ package controllers
 
 import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel, UpdateBook}
+import models.Login
 import models.GoogleBook._
 import org.mongodb.scala.result
 import play.api.data.Forms._
@@ -120,12 +121,15 @@ class ApplicationController @Inject()(
   /** ---- USED IN FRONTEND ---- */
 
 
-  // Display View Pages
 
-  def login(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    accessToken
-    Future.successful(Ok(views.html.display.login()))
+  // CSRF Token
+  private def accessToken(implicit request: Request[_]) = {
+    CSRF.getToken
   }
+
+
+
+  // Display View Pages
 
   def showBook(id: String): Action[AnyContent] = Action.async { implicit request =>
     repoService.read(id).map {
@@ -161,13 +165,6 @@ class ApplicationController @Inject()(
     Future.successful(Ok(views.html.index()))
   }
 
-
-  // CSRF Token
-  private def accessToken(implicit request: Request[_]) = {
-    CSRF.getToken
-  }
-
-
   // Display Form Pages
   def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.googleBook.searchISBN(isbnForm))
@@ -177,6 +174,10 @@ class ApplicationController @Inject()(
     Ok(views.html.googleBook.searchTitle(titleForm))
   }
 
+  def login(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    accessToken
+    Ok(views.html.form.login(Login.loginForm))
+  }
 
   // Get Form Inputs
   def getISBNForm: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
