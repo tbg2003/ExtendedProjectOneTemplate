@@ -58,7 +58,7 @@ body {
 }
 
 .navbar .nav-item {
-    margin-right: 20px;
+    margin-right: 50px;
 }
 
 .navbar .nav-link {
@@ -183,7 +183,7 @@ a:hover {
 }
 
 .btn-delete {
-    background-color: #e74c3c;
+    background-color: #c9502c;
     color: #fff;
     border: none;
     padding: 10px 20px;
@@ -197,7 +197,26 @@ a:hover {
 }
 
 .btn-delete:hover {
-    background-color: #c0392b;
+    background-color: #a13f22;
+}
+
+.btn-edit{
+    background-color: #66a9d4;
+    color: #fff;
+    border-style: solid;
+    border-width: 1px 1px 1px 0px; /* top, right, bottom and left */
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-edit:hover {
+    background-color: #346f94;
 }
 
 /* Form group styling */
@@ -291,7 +310,8 @@ th, td {
 }
 
 .td-btn-item {
- border: 1px solid #fff;
+ border-style: solid;
+ border-width: 1px 0px 1px 0px; /* top, right, bottom and left */
  background-color: #fff;
 }
 

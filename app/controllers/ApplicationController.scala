@@ -2,12 +2,13 @@ package controllers
 
 import com.mongodb.client.result.UpdateResult
 import models.{APIError, DataModel, UpdateBook}
+import models.GoogleBook._
 import org.mongodb.scala.result
 import play.api.data.Forms._
 import play.api.data.Form
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents, Request, Result}
-import services.{ApplicationService, Book, RepositoryService}
+import services.{ApplicationService, RepositoryService}
 import views.html.helper.CSRF
 
 import javax.inject.{Inject, Singleton}
@@ -113,17 +114,6 @@ class ApplicationController @Inject()(
     }
   }
 
-  def deleteBook(id: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    accessToken
-    repoService.delete(id).map {
-      case Right(result: result.DeleteResult) =>
-        if (result.getDeletedCount > 0) Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book deleted successfully")
-        else NotFound(views.html.display.error(NOT_FOUND)(s"No item found with id: $id"))
-
-      case Left(error) => Status(error.upstreamStatus)(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
-    }
-  }
-
   def getGoogleBook(search: String, term: String): Action[AnyContent] = Action.async { implicit request =>
     service.getGoogleBook(search = search, term = term).value.map {
       case Right(book) => Ok(Json.toJson(book))
@@ -132,14 +122,10 @@ class ApplicationController @Inject()(
     }
   }
 
-  def addBook(): Action[AnyContent] = Action.async {implicit request =>
-   Future.successful(Ok(views.html.form.addBook(DataModel.dataModelForm)))
-  }
+  /** ---- USED IN FRONTEND ---- */
 
-  def accessToken(implicit request: Request[_]) = {
-    CSRF.getToken
-  }
 
+  // Display View Templates
   def showBook(id: String): Action[AnyContent] = Action.async { implicit request =>
     repoService.read(id).map {
       case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
@@ -150,47 +136,43 @@ class ApplicationController @Inject()(
     }
   }
 
-  def addBookForm(): Action[AnyContent] =  Action.async {implicit request =>
-    accessToken //call the accessToken method
-    DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
-      formWithErrors => {
-        Future.successful(Ok(views.html.form.addBook(formWithErrors)))
-      },
-      formData => {
-        //here write how you would use this data to create a new book (DataModel)
-        repoService.create(formData).flatMap {
-          case Left(error) => Future.successful(Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage)))
-          case Right(dataModel) =>
-            Future.successful(Redirect(routes.ApplicationController.showBook(dataModel._id)))
-        }
-      }
-    )
-  }
-
-  def displayBookByISBN(isbn: String): Action[AnyContent] = Action.async { implicit request =>
-    // get book from google by isbn
-    service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
-      case Left(error) => Future.successful(Ok(views.html.display.error(error.httpResponseStatus)(error.reason)))
-      case Right(book) =>
-        // if got book then store in mongo
-        val dataObj = new DataModel(
-          _id = isbn,
-          title = book.title,
-          subtitle = book.subtitle,
-          pageCount = book.pageCount
-        )
-        repoService.read(isbn).flatMap {
-          case Left(readError) =>
-            repoService.create(dataObj).flatMap {
-              case Left(writeError) => Future.successful(Ok(views.html.display.error(writeError.upstreamStatus)(writeError.upstreamMessage)))
-              case Right(_: DataModel) => Future.successful(Ok(views.html.display.book(book)))
-          }
-          case Right(Some(_:DataModel)) => Future.successful(Ok(views.html.display.book(book)))
-          case Right(None) => Future.successful(Ok(views.html.display.error(NOT_FOUND)(s"No book found with ISBN: ${dataObj._id}")))
-        }
+  def listBooks(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    accessToken
+    repoService.index().map {
+      case Right(books: Seq[DataModel]) => Ok(views.html.interactive.listBooks(books))
+      case Left(error) => Status(error.upstreamStatus)(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
     }
   }
 
+  def displayClosestMatches(title: String, max:Int): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    service.getClosestMatches(search = "intitle", term = title, max).value.map {
+      case Right(books) => Ok(views.html.googleBook.foundBooks(books)(title))
+      case Left(error) => BadRequest(views.html.display.error(error.httpResponseStatus)(error.reason))
+    }
+  }
+
+  def addBook(): Action[AnyContent] = Action.async {implicit request =>
+    Future.successful(Ok(views.html.form.addBook(DataModel.dataModelForm)))
+  }
+
+
+  // CSRF Token
+  private def accessToken(implicit request: Request[_]) = {
+    CSRF.getToken
+  }
+
+
+  // Display Form Pages
+  def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.googleBook.searchISBN(isbnForm))
+  }
+
+  def searchTitle(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.googleBook.searchTitle(titleForm))
+  }
+
+
+  // Get Form Inputs
   def getISBNForm: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     accessToken
     isbnForm.bindFromRequest().fold(
@@ -199,13 +181,6 @@ class ApplicationController @Inject()(
         Future.successful(Redirect(routes.ApplicationController.displayBookByISBN(isbn)))
       }
     )
-  }
-
-  def displayClosestMatches(title: String, max:Int): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    service.getClosestMatches(search = "intitle", term = title, max).value.map {
-      case Right(books) => Ok(views.html.googleBook.foundBooks(books)(title))
-      case Left(error) => BadRequest(views.html.display.error(error.httpResponseStatus)(error.reason))
-    }
   }
 
   def getTitleForm: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
@@ -218,39 +193,39 @@ class ApplicationController @Inject()(
     )
   }
 
-  def searchISBN(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.googleBook.searchISBN(isbnForm))
-  }
-
-  def searchTitle(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    Ok(views.html.googleBook.searchTitle(titleForm))
+  def addBookForm(): Action[AnyContent] =  Action.async { implicit request =>
+    accessToken //call the accessToken method
+    DataModel.dataModelForm.bindFromRequest().fold( //from the implicit request we want to bind this to the form in our companion object
+      formWithErrors => {
+        Future.successful(Ok(views.html.form.addBook(formWithErrors)))
+      },
+      formData => {
+        repoService.create(formData).flatMap {
+          case Left(error) => Future.successful(Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage)))
+          case Right(dataModel) =>
+            Future.successful(Redirect(routes.ApplicationController.showBook(dataModel._id)))
+        }
+      }
+    )
   }
 
   def addGoogleBook(search: String): Action[AnyContent] = Action.async { implicit request =>
     bookForm.bindFromRequest().fold(
-      formWithErrors => {
+      _ => {
         Future.successful(Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("failure" -> "Failed to Add Book"))
       },
       book => {
         repoService.create(DataModel(book.isbn, book.title, book.subtitle, book.pageCount)).map {
-          case Right(createdDataModel) => Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("success" -> "Book Added successfully")
+          case Right(_) => Redirect(routes.ApplicationController.displayClosestMatches(search, 10)).flashing("success" -> "Book Added successfully")
           case Left(error) => Ok(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
         }
       }
     )
   }
 
-  def listBooks(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    accessToken
-    repoService.index().map {
-      case Right(books: Seq[DataModel]) => Ok(views.html.interactive.listBooks(books))
-      case Left(error) => Status(error.upstreamStatus)(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
-    }
-  }
-
   def getBookUpdate: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     bookForm.bindFromRequest().fold(
-      formWithErrors => {
+      _ => {
         Future.successful(Redirect(routes.ApplicationController.listBooks()).flashing("failure" -> "Failed to Edit Book"))
       },
       book => {
@@ -258,6 +233,19 @@ class ApplicationController @Inject()(
       }
     )
 
+  }
+
+
+  // Complete Operation then Redirect methods
+
+  def deleteBook(id: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    repoService.delete(id).map {
+      case Right(result: result.DeleteResult) =>
+        if (result.getDeletedCount > 0) Redirect(routes.ApplicationController.listBooks()).flashing("success" -> "Book deleted successfully")
+        else NotFound(views.html.display.error(NOT_FOUND)(s"No item found with id: $id"))
+
+      case Left(error) => Status(error.upstreamStatus)(views.html.display.error(error.upstreamStatus)(error.upstreamMessage))
+    }
   }
 
   def getUpdateForm(isbn: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
@@ -282,6 +270,31 @@ class ApplicationController @Inject()(
         )
       case Right(None) =>
         Future.successful(NotFound(views.html.display.error(NOT_FOUND)(s"No item found with id: $isbn")))
+    }
+  }
+
+  // TODO break down this method, wayyy to chunky
+  def displayBookByISBN(isbn: String): Action[AnyContent] = Action.async { implicit request =>
+    // get book from google by isbn
+    service.getGoogleBook(search = isbn, term = "isbn").value.flatMap {
+      case Left(error) => Future.successful(Ok(views.html.display.error(error.httpResponseStatus)(error.reason)))
+      case Right(book) =>
+        // if got book then store in mongo
+        val dataObj = new DataModel(
+          _id = isbn,
+          title = book.title,
+          subtitle = book.subtitle,
+          pageCount = book.pageCount
+        )
+        repoService.read(isbn).flatMap {
+          case Left(_) =>
+            repoService.create(dataObj).flatMap {
+              case Left(writeError) => Future.successful(Ok(views.html.display.error(writeError.upstreamStatus)(writeError.upstreamMessage)))
+              case Right(_: DataModel) => Future.successful(Ok(views.html.display.book(book)))
+            }
+          case Right(Some(_:DataModel)) => Future.successful(Ok(views.html.display.book(book)))
+          case Right(None) => Future.successful(Ok(views.html.display.error(NOT_FOUND)(s"No book found with ISBN: ${dataObj._id}")))
+        }
     }
   }
 }
